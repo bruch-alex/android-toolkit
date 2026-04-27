@@ -4,6 +4,7 @@ import app.androidtoolkit.AppState;
 import app.androidtoolkit.model.AndroidUser;
 import app.androidtoolkit.model.AppPackage;
 import app.androidtoolkit.viewmodel.DeviceView;
+import javafx.animation.PauseTransition;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.MapChangeListener;
@@ -11,6 +12,7 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.scene.control.*;
+import javafx.util.Duration;
 
 import java.util.Comparator;
 import java.util.List;
@@ -25,6 +27,8 @@ public class PackageListController {
     public Label matchedAppsLabel;
     public ComboBox<AndroidUser> selectedUserBox;
     private FilteredList<AppPackage> filteredApps;
+    PauseTransition delay = new PauseTransition(Duration.millis(300));
+
 
     public void initialize() {
         setupUI();
@@ -67,13 +71,22 @@ public class PackageListController {
         ));
 
         packageList.setItems(sortedApps);
-        device.getPackages().addListener((MapChangeListener<String, AppPackage>) change -> {
-            refreshUserPackages(device);
-        });
+        device.getPackages().addListener((MapChangeListener<String, AppPackage>) _ -> refreshUserPackages(device));
         selectedUserBox.setOnAction(_ -> refreshUserPackages(device));
 
-        searchField.textProperty().addListener((observable, oldValue, newValue) -> applyFilters());
-        hideSystemApps.selectedProperty().addListener((observable, oldValue, newValue) -> applyFilters());
+        searchField.textProperty().addListener((_, _, _) -> applyFilters());
+        hideSystemApps.selectedProperty().addListener((_, _, _) -> applyFilters());
+        packageList.getSelectionModel().selectedItemProperty().addListener((_, _, newValue) -> {
+            delay.stop();
+
+            delay.setOnFinished(_ -> {
+                if (newValue != null) {
+                    appState.getSelectedPackage().set(newValue);
+                    System.out.println("Selected package: " + newValue.getPackageName());
+                }
+            });
+            delay.playFromStart();
+        });
     }
 
     private void setupUI() {

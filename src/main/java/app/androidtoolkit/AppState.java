@@ -1,6 +1,7 @@
 package app.androidtoolkit;
 
 import app.androidtoolkit.model.AndroidPermission;
+import app.androidtoolkit.model.AppPackage;
 import app.androidtoolkit.viewmodel.DeviceView;
 import app.androidtoolkit.viewmodel.UserView;
 import javafx.beans.property.ObjectProperty;
@@ -15,7 +16,7 @@ public class AppState {
 
     private final ObjectProperty<DeviceView> connectedDevice = new SimpleObjectProperty<>(new DeviceView());
     private final ObjectProperty<UserView> selectedUser = new SimpleObjectProperty<>();
-    private final ObjectProperty<String> selectedPackage = new SimpleObjectProperty<>();
+    private final ObjectProperty<AppPackage> selectedPackage = new SimpleObjectProperty<>();
     private final ObjectProperty<AndroidPermission> selectedPermission = new SimpleObjectProperty<>();
 
     private AppState() {
