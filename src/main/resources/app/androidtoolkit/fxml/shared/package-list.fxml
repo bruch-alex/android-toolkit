@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="app.androidtoolkit.controller.PackageListController"
+      spacing="10"
+      minWidth="400"
+      style="-fx-background-color: white; -fx-border-color: #dbe4ee;">
+    <padding>
+        <Insets top="5" right="5" bottom="5" left="5"/>
+    </padding>
+
+    <HBox alignment="CENTER_LEFT">
+        <Label text="On device: "/>
+        <Label fx:id="totalInstalledAppsLabel" text="number"/>
+    </HBox>
+
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <TextField fx:id="searchField"
+                   promptText="Search packages..."
+                   HBox.hgrow="ALWAYS"/>
+        <CheckBox fx:id="hideSystemApps" text="Hide system apps" selected="true"/>
+    </HBox>
+
+
+    <HBox spacing="10" alignment="CENTER">
+
+        <HBox alignment="CENTER_LEFT">
+            <Label text="Matched: "/>
+            <Label fx:id="matchedAppsLabel" text="number"/>
+        </HBox>
+        <Region HBox.hgrow="ALWAYS"/>
+        <HBox spacing="4" alignment="CENTER_LEFT">
+            <Label text="User: "/>
+            <ComboBox fx:id="selectedUserBox" prefWidth="180"/>
+        </HBox>
+    </HBox>
+
+    <ListView fx:id="packageList"
+              VBox.vgrow="ALWAYS"/>
+
+</VBox>

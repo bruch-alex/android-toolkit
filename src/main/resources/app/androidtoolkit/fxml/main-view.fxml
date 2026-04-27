@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="app.androidtoolkit.controller.MainController">
+
+    <top>
+        <HBox alignment="CENTER_LEFT"
+              spacing="16"
+              style="-fx-padding: 10 14;  -fx-border-color: transparent transparent #d9e2ec transparent; -fx-border-width: 0 0 1 0;">
+
+            <HBox spacing="6" alignment="CENTER_LEFT"
+                  style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 4 10; -fx-border-color: #dbe4ee; -fx-border-radius: 8;">
+                <Label text="Adb status:" style="-fx-text-fill: #64748b;"/>
+                <Label fx:id="isAdbInstalledLabel" text="Not found"
+                       style="-fx-font-weight: bold; -fx-text-fill: #0f172a;"/>
+            </HBox>
+
+            <HBox fx:id="deviceModelContainer" visible="false" spacing="6" alignment="CENTER_LEFT"
+                  style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 4 10; -fx-border-color: #dbe4ee; -fx-border-radius: 8;">
+                <Label text="Device:" style="-fx-text-fill: #64748b;"/>
+                <Label fx:id="deviceModelLabel" text="No device connected"
+                       style="-fx-font-weight: bold; -fx-text-fill: #0f172a;"/>
+            </HBox>
+
+            <HBox fx:id="manufacturerContainer" visible="false" spacing="6" alignment="CENTER_LEFT"
+                  style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 4 10; -fx-border-color: #dbe4ee; -fx-border-radius: 8;">
+                <Label text="Manufacturer:" style="-fx-text-fill: #64748b;"/>
+                <Label fx:id="deviceManufacturerLabel" text="device"
+                       style="-fx-font-weight: bold; -fx-text-fill: #0f172a;"/>
+            </HBox>
+
+            <HBox fx:id="androidVersionContainer" spacing="6" visible="false" alignment="CENTER_LEFT"
+                  style="-fx-background-color: white; -fx-background-radius: 8; -fx-padding: 4 10; -fx-border-color: #dbe4ee; -fx-border-radius: 8;">
+                <Label text="Android:" style="-fx-text-fill: #64748b;"/>
+                <Label fx:id="androidVersionLabel" text="androidVersion"
+                       style="-fx-font-weight: bold; -fx-text-fill: #0f172a;"/>
+            </HBox>
+
+        </HBox>
+    </top>
+
+    <center>
+        <HBox>
+            <fx:include source="shared/package-list.fxml"/>
+            <fx:include source="permissions-view/main-view.fxml"/>
+        </HBox>
+    </center>
+
+</BorderPane>
