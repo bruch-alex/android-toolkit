@@ -1,15 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.RowConstraints?>
-<?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.text.TextFlow?>
-<?import javafx.scene.layout.HBox?>
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.layout.Region?>
-<?import javafx.scene.control.ListView?>
-<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.TextFlow?>
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="app.androidtoolkit.controller.PackagePermissionsController"
@@ -54,10 +48,16 @@
         <VBox GridPane.rowIndex="1" GridPane.columnIndex="1" spacing="2" VBox.vgrow="ALWAYS">
             <Label text="Runtime permissions"/>
             <Label text="Permissions requested while the app is running, user can change"/>
+
             <HBox>
-                <Label text="Total permissions: "/>
-                <Label fx:id="totalRuntimePermissionsLabel" text="number"/>
+                <HBox>
+                    <Label text="Total permissions: "/>
+                    <Label fx:id="totalRuntimePermissionsLabel" text="number"/>
+                </HBox>
+                <Region HBox.hgrow="ALWAYS"/>
+                <CheckBox fx:id="showOnlyGrantedRuntimeCheckbox" text="Show only granted"/>
             </HBox>
+            <Button fx:id="refreshRuntimeButton" text="Refresh"/>
             <ListView fx:id="runtimePermissionsList"
                       prefWidth="400"
                       VBox.vgrow="ALWAYS"/>

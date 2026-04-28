@@ -36,4 +36,10 @@ public class AppState {
         selectedPackage.set(null);
         selectedUser.set(user);
     }
+
+    public void forceUpdateSelectedPackage() {
+        var pkg = selectedPackage.get();
+        selectedPackage.set(null);
+        selectedPackage.set(pkg);
+    }
 }
