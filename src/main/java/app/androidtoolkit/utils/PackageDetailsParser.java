@@ -72,12 +72,12 @@ public final class PackageDetailsParser {
                 inSection = true;
                 continue;
             }
-            if (inSection && line.equals("requested permissions:")) {
+            if (inSection && (line.equals("requested permissions:") || line.equals("install permissions:"))) {
                 System.out.println("existing section");
                 break;
             }
             if (inSection) {
-                System.out.println("Parsing permission: " + line);
+                System.out.println("Parsing declared permission: " + line);
                 var parts = line.split(":");
                 var nameParts = parts[0].split("\\.");
                 var shortName = nameParts[nameParts.length - 1];
@@ -109,7 +109,7 @@ public final class PackageDetailsParser {
                 break;
             }
             if (inPermissionsSection) {
-                if (line.startsWith("User ") || line.isEmpty()){
+                if (line.startsWith("User ") || line.isEmpty() || line.trim().equals("enabledComponents:")){
                     System.out.println("Exiting");
                     break;
                 }
@@ -140,6 +140,9 @@ public final class PackageDetailsParser {
         for (var line : details) {
             if (line.startsWith("User " + userId)) {
                 System.out.println("Found userSpecificDetails: " + line);
+                if (line.equals("User " + userId + ":")){
+                    break;
+                }
                 var parts = line.split(":")[1].split(" ");
                 for (var part : parts) {
                     if (part.startsWith("installed=")) {

@@ -1,16 +1,17 @@
 package app.androidtoolkit.controller;
 
 import app.androidtoolkit.AppState;
-//import app.androidtoolkit.model.permissions.AndroidPermission;
-import app.androidtoolkit.model.AppPackage;
 import app.androidtoolkit.model.permissions.InstallPermission;
 import app.androidtoolkit.model.permissions.RuntimePermission;
-import app.androidtoolkit.viewmodel.DeviceView;
 import javafx.collections.FXCollections;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.text.TextFlow;
+
+import java.util.List;
+
+//import app.androidtoolkit.model.permissions.AndroidPermission;
 
 public class PackagePermissionsController {
     private final AppState appState = AppState.getInstance();
@@ -44,21 +45,37 @@ public class PackagePermissionsController {
             }
         });
 
+        runtimePermissionsList.setCellFactory(listView -> new ListCell<>() {
+            @Override
+            protected void updateItem(RuntimePermission item, boolean empty) {
+                super.updateItem(item, empty);
+
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item.shortName());
+                }
+            }
+        });
+
     }
 
     public void dataLogic() {
         appState.getSelectedPackage().addListener((obs, oldVal, selectedPackage) -> {
             if (selectedPackage == null) {
-                installPermissionsList.setItems(FXCollections.observableArrayList());
-                runtimePermissionsList.setItems(FXCollections.observableArrayList());
+                installPermissionsList.getItems().clear();
+                runtimePermissionsList.getItems().clear();
                 return;
             }
 
             installPermissionsList.setItems(
                     FXCollections.observableArrayList(selectedPackage.getInstalledPermissions())
             );
+
             runtimePermissionsList.setItems(
-                    FXCollections.observableList(selectedPackage.getInstanceDetailsMap().get(appState.getSelectedUser().get().id()).getRuntimePermissions())
+                    appState.getSelectedUser().isBound() ?
+                            FXCollections.observableList(List.of()) :
+                            FXCollections.observableList(selectedPackage.getInstanceDetailsMap().get(appState.getSelectedUser().get().id()).getRuntimePermissions())
             );
         });
     }

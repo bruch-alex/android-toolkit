@@ -75,8 +75,8 @@ public class PackageListController {
         searchField.textProperty().addListener((_, _, _) -> applyFilters());
         hideSystemApps.selectedProperty().addListener((_, _, _) -> applyFilters());
         packageList.getSelectionModel().selectedItemProperty().addListener((_, _, newValue) -> {
-            delay.stop();
 
+            delay.stop();
             delay.setOnFinished(_ -> {
                 if (newValue != null) {
                     appState.getSelectedPackage().set(newValue);

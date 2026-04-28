@@ -238,7 +238,7 @@ public class ADBService {
                     if (!inPackageSection && line.equals("Packages:")) {
                         inPackageSection = true;
                     }
-                    if (inPackageSection && line.equals("Dexopt state:")) {
+                    if (inPackageSection && (line.equals("Queries:") || line.isEmpty())) {
                         break;
                     }
                     if (inPackageSection) {
