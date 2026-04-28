@@ -5,6 +5,7 @@ import app.androidtoolkit.mapper.AndroidDeviceMapper;
 import app.androidtoolkit.model.AndroidDevice;
 import app.androidtoolkit.model.AndroidUser;
 import app.androidtoolkit.model.AppPackage;
+import app.androidtoolkit.utils.PackageDetailsParser;
 import com.android.ddmlib.*;
 import javafx.application.Platform;
 
@@ -85,6 +86,18 @@ public class ADBService {
             }
         });
         refreshDevices(bridge);
+
+        appState.getSelectedPackage().addListener((_, _, newValue) -> {
+            if (newValue != null) {
+                try {
+                    System.out.println("Scanning package info for: " + newValue.getPackageName());
+                    scanPackageInfoAndUpdateModel(newValue);
+                    System.out.println("Package info scanned: " + newValue.getInstalledPermissions().size());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     private void refreshDevices(AndroidDebugBridge bridge) {
@@ -105,7 +118,6 @@ public class ADBService {
                 }
             }
         }
-//        Platform.runLater(() -> appState.getConnectedDevice().set(null));
         var finalDevice = newDevice;
         Platform.runLater(() -> appState.getConnectedDevice().set(finalDevice == null ? null : AndroidDeviceMapper.toView(finalDevice)));
     }
@@ -213,4 +225,40 @@ public class ADBService {
         return temp;
     }
 
+    public void scanPackageInfoAndUpdateModel(AppPackage appPackage) throws ShellCommandUnresponsiveException, AdbCommandRejectedException, IOException, TimeoutException {
+
+        final List<String> temp = new ArrayList<>();
+        connectedIDevice.executeShellCommand("dumpsys package " + appPackage.getPackageName(), new MultiLineReceiver() {
+            private boolean inPackageSection = false;
+
+            @Override
+            public void processNewLines(String[] lines) {
+
+                for (String line : lines) {
+                    if (!inPackageSection && line.equals("Packages:")) {
+                        inPackageSection = true;
+                    }
+                    if (inPackageSection && line.equals("Dexopt state:")) {
+                        break;
+                    }
+                    if (inPackageSection) {
+                        temp.add(line);
+                    }
+                }
+            }
+
+            @Override
+            public boolean isCancelled() {
+                return false;
+            }
+        });
+
+        System.out.println("Extracted package info size: " + temp.size());
+        var parsedPackage = PackageDetailsParser.parsePackageDetails(temp, getUsers(connectedIDevice));
+        if (appPackage.merge(parsedPackage)){
+            System.out.println("Package info updated: " + appPackage.getPackageName());
+        } else {
+            System.out.println("Package info not updated: " + appPackage.getPackageName());
+        }
+    }
 }

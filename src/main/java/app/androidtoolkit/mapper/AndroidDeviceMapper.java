@@ -21,9 +21,7 @@ public abstract class AndroidDeviceMapper {
         view.manufacturerProperty().set(device.getManufacturer());
         view.stateProperty().set(device.getState());
         view.getUsers().addAll(device.getUsers());
-        view.getPackages().putAll(device.getPackageRegistry());
+        view.getPackages().putAll(device.getPackages());
         return view;
     }
-
-
 }

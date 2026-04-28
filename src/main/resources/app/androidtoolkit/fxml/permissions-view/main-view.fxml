@@ -1,10 +1,77 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.text.TextFlow?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Label?>
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
-      prefHeight="900.0" prefWidth="1400.0"
-      spacing="10"
-      style="-fx-font-size: 14px;">
+      fx:controller="app.androidtoolkit.controller.PackagePermissionsController"
+      spacing="10" VBox.vgrow="ALWAYS">
 
+    <padding>
+        <Insets top="10" right="10" bottom="10" left="10"/>
+    </padding>
+
+
+    <GridPane hgap="10" vgap="10" VBox.vgrow="ALWAYS">
+        <columnConstraints>
+            <ColumnConstraints percentWidth="33.33" hgrow="ALWAYS"/>
+            <ColumnConstraints percentWidth="33.33" hgrow="ALWAYS"/>
+            <ColumnConstraints percentWidth="33.33" hgrow="ALWAYS"/>
+        </columnConstraints>
+        <rowConstraints>
+            <RowConstraints vgrow="NEVER"/>
+            <RowConstraints vgrow="ALWAYS"/>
+        </rowConstraints>
+
+        <VBox GridPane.columnIndex="0" GridPane.columnSpan="2" spacing="2" VBox.vgrow="ALWAYS">
+            <Label text="App Permissions"
+                   style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+            <Region prefHeight="2"/>
+        </VBox>
+
+        <VBox GridPane.rowIndex="1" GridPane.columnIndex="0" spacing="2" VBox.vgrow="ALWAYS">
+            <Label text="Install permissions"/>
+            <Label text="Permissions declared at install time, user can't change"/>
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <HBox>
+                    <Label text="Total permissions: "/>
+                    <Label fx:id="totalInstallPermissionsLabel" text="number"/>
+                </HBox>
+            </HBox>
+            <ListView fx:id="installPermissionsList"
+                      prefWidth="400"
+                      VBox.vgrow="ALWAYS"/>
+        </VBox>
+
+        <VBox GridPane.rowIndex="1" GridPane.columnIndex="1" spacing="2" VBox.vgrow="ALWAYS">
+            <Label text="Runtime permissions"/>
+            <Label text="Permissions requested while the app is running, user can change"/>
+            <HBox>
+                <Label text="Total permissions: "/>
+                <Label fx:id="totalRuntimePermissionsLabel" text="number"/>
+            </HBox>
+            <ListView fx:id="runtimePermissionsList"
+                      prefWidth="400"
+                      VBox.vgrow="ALWAYS"/>
+        </VBox>
+
+        <VBox GridPane.rowIndex="1" GridPane.columnIndex="2" spacing="2">
+            <Label text="Description"/>
+            <Label text="Description for selected permission"/>
+            <HBox>
+                <Label/>
+            </HBox>
+            <TextFlow fx:id="permissionDetails"
+                      prefWidth="400"
+                      VBox.vgrow="ALWAYS"/>
+        </VBox>
+    </GridPane>
 </VBox>

@@ -50,9 +50,7 @@ public class PackageListController {
         totalInstalledAppsLabel.setText("0");
         matchedAppsLabel.setText("0");
 
-        appState.getSelectedUser().set(null);
-        appState.getSelectedPackage().set(null);
-        appState.getSelectedPermission().set(null);
+        appState.selectNewUser(null);
     }
 
     private void onDeviceConnect(DeviceView device) {
@@ -130,6 +128,7 @@ public class PackageListController {
 
     private void refreshUserPackages(DeviceView device) {
         var selectedUser = selectedUserBox.getSelectionModel().getSelectedItem();
+        appState.selectNewUser(selectedUser);
 
         if (device == null || selectedUser == null) {
             userPackages.clear();

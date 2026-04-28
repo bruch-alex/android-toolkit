@@ -1,5 +1,6 @@
 package app.androidtoolkit.viewmodel;
 
+import app.androidtoolkit.model.AndroidDevice;
 import app.androidtoolkit.model.AndroidUser;
 import app.androidtoolkit.model.AppPackage;
 import javafx.beans.property.SimpleStringProperty;
@@ -18,16 +19,20 @@ import java.util.List;
 @AllArgsConstructor
 @EqualsAndHashCode
 public class DeviceView {
+    private final AndroidDevice device;
+
     private final StringProperty model;
     private final StringProperty manufacturer;
     private final StringProperty state;
     private final StringProperty androidVersion;
     @Getter
     private final ObservableList<AndroidUser> users;
+
     @Getter
-    private final ObservableMap<String, AppPackage> packages;
+    private final ObservableMap<String, AppPackage> packages; // package name -> AppPackage
 
     public DeviceView() {
+        this.device = null;
         this.model = new SimpleStringProperty("");
         this.manufacturer = new SimpleStringProperty("");
         this.state = new SimpleStringProperty("");

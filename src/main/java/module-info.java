@@ -11,4 +11,5 @@ module app.androidtoolkit {
     opens app.androidtoolkit.model to javafx.fxml;
     opens app.androidtoolkit.controller to javafx.fxml;
     opens app.androidtoolkit.viewmodel to javafx.base;
+    opens app.androidtoolkit.model.permissions to javafx.fxml;
 }

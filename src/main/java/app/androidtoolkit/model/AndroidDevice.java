@@ -1,12 +1,12 @@
 package app.androidtoolkit.model;
 
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableMap;
 import lombok.Builder;
 import lombok.Data;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Data
 @Builder
@@ -18,5 +18,5 @@ public class AndroidDevice {
     @Builder.Default
     private final List<AndroidUser> users = new ArrayList<>();
     @Builder.Default
-    private final ObservableMap<String, AppPackage> packageRegistry = FXCollections.observableHashMap();
+    private final Map<String, AppPackage> packages = new HashMap<>();
 }
