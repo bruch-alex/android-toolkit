@@ -3,6 +3,7 @@ package app.androidtoolkit.controller;
 import app.androidtoolkit.AppState;
 import app.androidtoolkit.model.permissions.InstallPermission;
 import app.androidtoolkit.model.permissions.RuntimePermission;
+import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.transformation.FilteredList;
 import javafx.scene.control.*;
@@ -77,6 +78,7 @@ public class PackagePermissionsController {
             installPermissionsList.setItems(
                     FXCollections.observableArrayList(selectedPackage.getPackageDetails().getInstalledPermissions())
             );
+            totalInstallPermissionsLabel.textProperty().set(String.valueOf(installPermissionsList.getItems().size()));
 
 
             var allRuntimePermissions =
@@ -87,6 +89,7 @@ public class PackagePermissionsController {
             if (allRuntimePermissions == null) {
                 allRuntimePermissions = new ArrayList<>();
             }
+            totalRuntimePermissionsLabel.textProperty().set(String.valueOf(allRuntimePermissions.size()));
             filteredRuntimePermissions = new FilteredList<>(FXCollections.observableArrayList(allRuntimePermissions), _ -> true);
 
             runtimePermissionsList.setItems(filteredRuntimePermissions);
