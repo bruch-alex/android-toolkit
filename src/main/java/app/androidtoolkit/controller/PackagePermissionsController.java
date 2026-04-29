@@ -8,6 +8,8 @@ import javafx.collections.transformation.FilteredList;
 import javafx.scene.control.*;
 import javafx.scene.text.TextFlow;
 
+import java.util.ArrayList;
+
 //import app.androidtoolkit.model.permissions.AndroidPermission;
 
 public class PackagePermissionsController {
@@ -73,7 +75,7 @@ public class PackagePermissionsController {
             }
 
             installPermissionsList.setItems(
-                    FXCollections.observableArrayList(selectedPackage.getInstalledPermissions())
+                    FXCollections.observableArrayList(selectedPackage.getPackageDetails().getInstalledPermissions())
             );
 
 
@@ -82,6 +84,9 @@ public class PackagePermissionsController {
                             .get(appState.getSelectedUser().get().id())
                             .getRuntimePermissions();
 
+            if (allRuntimePermissions == null) {
+                allRuntimePermissions = new ArrayList<>();
+            }
             filteredRuntimePermissions = new FilteredList<>(FXCollections.observableArrayList(allRuntimePermissions), _ -> true);
 
             runtimePermissionsList.setItems(filteredRuntimePermissions);

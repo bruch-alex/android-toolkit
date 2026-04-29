@@ -45,10 +45,10 @@
         <HBox>
             <fx:include source="shared/package-list.fxml"/>
             <TabPane tabClosingPolicy="UNAVAILABLE" HBox.hgrow="ALWAYS">
-                <Tab text="Apps">
-
+                <Tab text="Package info">
+                    <fx:include source="package-info/main.fxml"/>
                 </Tab>
-                <Tab text="Permissions">
+                <Tab text="App Permissions">
                     <fx:include source="permissions-view/main-view.fxml"/>
                 </Tab>
             </TabPane>

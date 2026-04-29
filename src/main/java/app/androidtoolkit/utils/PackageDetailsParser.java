@@ -3,6 +3,7 @@ package app.androidtoolkit.utils;
 import app.androidtoolkit.model.AndroidUser;
 import app.androidtoolkit.model.AppPackage;
 import app.androidtoolkit.model.InstanceDetails;
+import app.androidtoolkit.model.PackageDetails;
 import app.androidtoolkit.model.permissions.DeclaredPermission;
 import app.androidtoolkit.model.permissions.InstallPermission;
 import app.androidtoolkit.model.permissions.RuntimePermission;
@@ -20,38 +21,40 @@ public final class PackageDetailsParser {
         throw new UnsupportedOperationException("Utility class");
     }
 
-    public static AppPackage parsePackageDetails(List<String> lines, List<AndroidUser> users) {
+    public static AppPackage getPackageDetails(List<String> lines, List<AndroidUser> users) {
         var appPackage = new AppPackage();
-        parseAndSetPackageInfo(lines, appPackage);
-        appPackage.setInstalledPermissions(parseInstallPermissions(lines));
-        appPackage.setDeclaredPermissions(parseDeclaredPermissions(lines));
+        appPackage.setPackageName(getPackageName(lines));
+        var details = parseAndSetPackageInfo(lines);
+
+        details.setQueriesPackages(parseQueriedPackages(lines));
+        details.setInstalledPermissions(parseInstallPermissions(lines));
+        details.setDeclaredPermissions(parseDeclaredPermissions(lines));
+        appPackage.setPackageDetails(details);
+
         for (var user : users) {
             InstanceDetails instanceDetails = new InstanceDetails();
             parseAndSetUserSpecificDetails(lines, instanceDetails, user.id());
-            instanceDetails.setRuntimePermissions(parseRuntimePermissionsForUser(lines, user.id()));
-            if (instanceDetails.isInstalled()){
-                appPackage.getInstanceDetailsMap().put(user.id(), instanceDetails);
+            if (!instanceDetails.isInstalled()) {
+                continue;
             }
+            instanceDetails.setRuntimePermissions(parseRuntimePermissionsForUser(lines, user.id()));
+            appPackage.getInstanceDetailsMap().put(user.id(), instanceDetails);
         }
         return appPackage;
     }
 
-    public static List<InstallPermission> parseInstallPermissions(List<String> details) {
+    private static List<InstallPermission> parseInstallPermissions(List<String> details) {
         var inSection = false;
         List<InstallPermission> permissions = new ArrayList<>();
-        System.out.println("Parsing install permissions..." + details.size());
         for (var line : details) {
             if (!inSection && line.equals("install permissions:")) {
-                System.out.println("Parsing install permissions...");
                 inSection = true;
                 continue;
             }
             if (inSection && line.startsWith("User ")) {
-                System.out.println("Found user section");
                 break;
             }
             if (inSection) {
-                System.out.println("Parsing permission: " + line);
                 var parts = line.split(":");
                 var nameParts = parts[0].split("\\.");
                 var shortName = nameParts[nameParts.length - 1];
@@ -62,22 +65,18 @@ public final class PackageDetailsParser {
         return permissions;
     }
 
-    public static List<DeclaredPermission> parseDeclaredPermissions(List<String> details) {
+    private static List<DeclaredPermission> parseDeclaredPermissions(List<String> details) {
         var inSection = false;
         List<DeclaredPermission> permissions = new ArrayList<>();
-        System.out.println("Parsing declared permissions..." + details.size());
         for (var line : details) {
             if (!inSection && line.equals("declared permissions:")) {
-                System.out.println("entering section...");
                 inSection = true;
                 continue;
             }
             if (inSection && (line.equals("requested permissions:") || line.equals("install permissions:"))) {
-                System.out.println("existing section");
                 break;
             }
             if (inSection) {
-                System.out.println("Parsing declared permission: " + line);
                 var parts = line.split(":");
                 var nameParts = parts[0].split("\\.");
                 var shortName = nameParts[nameParts.length - 1];
@@ -88,32 +87,27 @@ public final class PackageDetailsParser {
         return permissions;
     }
 
-    public static List<RuntimePermission> parseRuntimePermissionsForUser(List<String> details, String userId) {
+    private static List<RuntimePermission> parseRuntimePermissionsForUser(List<String> details, String userId) {
         var inUserSection = false;
         var inPermissionsSection = false;
         List<RuntimePermission> permissions = new ArrayList<>();
         System.out.println("Parsing declared permissions..." + details.size());
         for (var line : details) {
             if (!inUserSection && line.startsWith("User " + userId)) {
-                System.out.println("Found user section");
                 inUserSection = true;
                 continue;
             }
             if (inUserSection && line.equals("runtime permissions:")) {
-                System.out.println("entering section...");
                 inPermissionsSection = true;
                 continue;
             }
             if (inPermissionsSection && (line.trim().equals("disabledComponents:") || line.trim().startsWith("User "))) {
-                System.out.println("existing section");
                 break;
             }
             if (inPermissionsSection) {
-                if (line.startsWith("User ") || line.isEmpty() || line.trim().equals("enabledComponents:")){
-                    System.out.println("Exiting");
+                if (line.startsWith("User ") || line.isEmpty() || line.trim().equals("enabledComponents:")) {
                     break;
                 }
-                System.out.println("Parsing permission: " + line);
                 var parts = line.split(":");
                 var nameParts = parts[0].split("\\.");
                 var shortName = nameParts[nameParts.length - 1];
@@ -126,21 +120,45 @@ public final class PackageDetailsParser {
         return permissions;
     }
 
-    public static void parseAndSetPackageInfo(List<String> details, AppPackage target) {
-        for (var line : details) {
-            Matcher packageHeaderMatcher = PACKAGE_HEADER_PATTERN.matcher(line);
-            if (packageHeaderMatcher.find()) {
-                target.setPackageName(packageHeaderMatcher.group(1));
-                break; // Stop parsing once we find the package header for now (Change later)
+    /**
+     * Parses adb output from line Packages: till User 0
+     *
+     * @param lines
+     */
+    private static PackageDetails parseAndSetPackageInfo(List<String> lines) {
+        var packageDetails = new PackageDetails();
+        for (var line : lines) {
+            if (line.startsWith("appId=")) {
+                packageDetails.setAppId(line.substring("appId=".length()));
+            } else if (line.startsWith("versionName=")) {
+                System.out.println("Found versionName: " + line);
+                packageDetails.setVersionName(line.substring("versionName=".length()));
+            } else if (line.startsWith("versionCode=")) {
+                System.out.println("Found versionCode: " + line);
+                var codeDetails = line.split(" ");
+                packageDetails.setVersionCode(codeDetails[0].substring("versionCode=".length()));
+                packageDetails.setMinSdkVersion(Integer.parseInt(codeDetails[1].substring("minSdk=".length())));
+                packageDetails.setTargetSdkVersion(Integer.parseInt(codeDetails[2].substring("targetSdk=".length())));
             }
         }
+        return packageDetails;
+    }
+
+    private static String getPackageName(List<String> lines) {
+        for (var line : lines) {
+            Matcher packageHeaderMatcher = PACKAGE_HEADER_PATTERN.matcher(line);
+            if (packageHeaderMatcher.find()) {
+                return packageHeaderMatcher.group(1);
+            }
+        }
+        return null;
     }
 
     private static void parseAndSetUserSpecificDetails(List<String> details, InstanceDetails targetDetails, String userId) {
         for (var line : details) {
             if (line.startsWith("User " + userId)) {
                 System.out.println("Found userSpecificDetails: " + line);
-                if (line.equals("User " + userId + ":")){
+                if (line.equals("User " + userId + ":")) {
                     break;
                 }
                 var parts = line.split(":")[1].split(" ");
@@ -163,5 +181,20 @@ public final class PackageDetailsParser {
                 break;
             }
         }
+    }
+
+    private static List<String> parseQueriedPackages(List<String> lines) {
+        var packages = new ArrayList<String>();
+        for (var line : lines) {
+            if (line.startsWith("queriesPackages=[")) {
+                for (var pkg : line.substring("queriesPackages=[".length()).split(",")) {
+                    pkg = pkg.trim().replace("]", "");
+                    packages.add(pkg);
+                }
+                System.out.println("Found queries packages: " + packages.size());
+                return packages;
+            }
+        }
+        return packages;
     }
 }

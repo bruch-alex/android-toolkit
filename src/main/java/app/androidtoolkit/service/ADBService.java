@@ -92,7 +92,7 @@ public class ADBService {
                 try {
                     System.out.println("Scanning package info for: " + newValue.getPackageName());
                     scanPackageInfoAndUpdateModel(newValue);
-                    System.out.println("Package info scanned: " + newValue.getInstalledPermissions().size());
+                    System.out.println("Package info scanned: " + newValue.getPackageDetails().getInstalledPermissions().size());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -254,11 +254,12 @@ public class ADBService {
         });
 
         System.out.println("Extracted package info size: " + temp.size());
-        var parsedPackage = PackageDetailsParser.parsePackageDetails(temp, getUsers(connectedIDevice));
+        var parsedPackage = PackageDetailsParser.getPackageDetails(temp, getUsers(connectedIDevice));
+        System.out.println("Parsed package info: " + parsedPackage);
         if (appPackage.merge(parsedPackage)){
-            System.out.println("Package info updated: " + appPackage.getPackageName());
+            System.out.println("Package info updated: " + appPackage);
         } else {
-            System.out.println("Package info not updated: " + appPackage.getPackageName());
+            System.out.println("Package info not updated: " + appPackage);
         }
     }
 }
