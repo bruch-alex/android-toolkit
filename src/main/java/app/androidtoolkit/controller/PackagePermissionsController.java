@@ -3,15 +3,13 @@ package app.androidtoolkit.controller;
 import app.androidtoolkit.AppState;
 import app.androidtoolkit.model.permissions.InstallPermission;
 import app.androidtoolkit.model.permissions.RuntimePermission;
-import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.transformation.FilteredList;
 import javafx.scene.control.*;
 import javafx.scene.text.TextFlow;
 
 import java.util.ArrayList;
-
-//import app.androidtoolkit.model.permissions.AndroidPermission;
+import java.util.List;
 
 public class PackagePermissionsController {
     private final AppState appState = AppState.getInstance();
@@ -61,6 +59,7 @@ public class PackagePermissionsController {
         });
 
         showOnlyGrantedRuntimeCheckbox.selectedProperty().addListener((_, _, _) -> applyFilters());
+
         refreshRuntimeButton.setOnAction(e -> {
             appState.forceUpdateSelectedPackage();
             applyFilters();
@@ -68,30 +67,49 @@ public class PackagePermissionsController {
     }
 
     public void dataLogic() {
-        appState.getSelectedPackage().addListener((obs, oldVal, selectedPackage) -> {
+        appState.getSelectedPackage().addListener((_, _, selectedPackage) -> {
+            // Reset UI
+            installPermissionsList.setItems(FXCollections.observableArrayList());
+            runtimePermissionsList.setItems(FXCollections.observableArrayList());
+            totalInstallPermissionsLabel.setText("0");
+            totalRuntimePermissionsLabel.setText("0");
+
             if (selectedPackage == null) {
-                installPermissionsList.setItems(FXCollections.observableArrayList());
-                runtimePermissionsList.setItems(FXCollections.observableArrayList());
                 return;
             }
 
+            // Install permissions
+            var installPermissions = selectedPackage
+                    .getPackageDetails()
+                    .getInstalledPermissions();
+
             installPermissionsList.setItems(
-                    FXCollections.observableArrayList(selectedPackage.getPackageDetails().getInstalledPermissions())
+                    FXCollections.observableArrayList(installPermissions)
             );
-            totalInstallPermissionsLabel.textProperty().set(String.valueOf(installPermissionsList.getItems().size()));
 
+            totalInstallPermissionsLabel.setText(
+                    String.valueOf(installPermissions.size())
+            );
 
-            var allRuntimePermissions =
-                    selectedPackage.getInstanceDetailsMap()
-                            .get(appState.getSelectedUser().get().id())
-                            .getRuntimePermissions();
+            // Runtime permissions
+            var user = appState.getSelectedUser().get();
 
-            if (allRuntimePermissions == null) {
-                allRuntimePermissions = new ArrayList<>();
-            }
-            totalRuntimePermissionsLabel.textProperty().set(String.valueOf(allRuntimePermissions.size()));
-            filteredRuntimePermissions = new FilteredList<>(FXCollections.observableArrayList(allRuntimePermissions), _ -> true);
+            var instanceDetails = selectedPackage
+                    .getInstanceDetailsMap()
+                    .get(user.id());
 
+            List<RuntimePermission> allRuntimePermissions = (instanceDetails != null &&
+                    instanceDetails.getRuntimePermissions() != null)
+                    ? instanceDetails.getRuntimePermissions()
+                    : new ArrayList<>();
+
+            totalRuntimePermissionsLabel.setText(
+                    String.valueOf(allRuntimePermissions.size())
+            );
+
+            filteredRuntimePermissions = new FilteredList<>(
+                    FXCollections.observableArrayList(allRuntimePermissions),
+                    _ -> true);
             runtimePermissionsList.setItems(filteredRuntimePermissions);
         });
     }

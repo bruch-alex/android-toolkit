@@ -7,6 +7,7 @@ module app.androidtoolkit {
     opens app.androidtoolkit to javafx.fxml;
     exports app.androidtoolkit to javafx.graphics;
     exports app.androidtoolkit.controller to javafx.fxml;
+    exports app.androidtoolkit.model to javafx.fxml;
 
     opens app.androidtoolkit.model to javafx.fxml;
     opens app.androidtoolkit.controller to javafx.fxml;
