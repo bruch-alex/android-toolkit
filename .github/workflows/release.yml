@@ -63,8 +63,13 @@ jobs:
           Type=Application
           Categories=Utility;
           EOF
-          
-          convert -size 256x256 xc:blue AppDir/android-toolkit.png || true
+
+      - name: Install ImageMagick
+        run: sudo apt-get update && sudo apt-get install -y imagemagick
+
+      - name: Generate icon
+        run: |
+          convert -size 256x256 xc:blue AppDir/android-toolkit.png
 
       - name: Get AppImage tool
         run: |
