@@ -1,0 +1,87 @@
+name: Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+
+  build-linux:
+    runs-on: ubuntu-latest
+    outputs:
+      artifact-path: ${{ steps.build-linux.outputs.artifact-path }}
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '25'
+
+      - name: Build
+        run: mvn clean build
+
+      - name: Create custom runtime (jlink)
+        run: |
+          jlink \
+            --add-modules \
+              java.base,java.desktop,java.logging,java.scripting,javafx.controls,javafx.fxml \
+            --output custom-runtime \
+            --strip-debug \
+            --compress=2 \
+            --no-header-files \
+            --no-man-pages
+
+      - name: Prepare AppDir
+        run: |
+          mkdir -p AppDir/lib
+          cp target/*.jar AppDir/
+          mv AppDir/*.jar AppDir/android-toolkit.jar
+          
+          cp -r target/lib/* AppDir/lib/
+          cp -r custom-runtime/. AppDir/jre/
+          
+          cat > AppDir/AppRun << 'EOF'
+          #!/bin/bash
+          DIR="$(dirname "$(readlink -f "$0")")"
+          JAR=$(ls "$DIR"/*.jar | head -n 1)
+          
+          exec "$DIR/jre/bin/java" \
+            --enable-native-access=ALL-UNNAMED \
+            -cp "$JAR:$DIR/lib/*" \
+            app.androidtoolkit.Launcher
+          EOF
+          
+          chmod +x AppDir/AppRun
+          
+          cat > AppDir/android-toolkit.desktop << 'EOF'
+          [Desktop Entry]
+          Name=Android Toolkit
+          Exec=android-toolkit
+          Icon=android-toolkit
+          Type=Application
+          Categories=Utility;
+          EOF
+          
+          convert -size 256x256 xc:blue AppDir/android-toolkit.png || true
+
+      - name: Get AppImage tool
+        run: |
+          wget https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod +x appimagetool-x86_64.AppImage
+
+      - name: Build AppImage
+        run: |
+          ARCH=x86_64 ./appimagetool-x86_64.AppImage AppDir
+
+      - name: Rename artifact
+        id: build
+        run: |
+            FILE=$(ls *.AppImage)
+            mv "$FILE" android-toolkit-linux.AppImage
+            echo "artifact=android-toolkit-linux.AppImage" >> $GITHUB_OUTPUT
+
+            - uses: actions/upload-artifact@v4
+              with:
+                name: linux
+                path: android-toolkit-linux.AppImage
