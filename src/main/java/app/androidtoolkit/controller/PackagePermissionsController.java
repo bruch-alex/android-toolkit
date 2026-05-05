@@ -3,9 +3,14 @@ package app.androidtoolkit.controller;
 import app.androidtoolkit.AppState;
 import app.androidtoolkit.model.permissions.InstallPermission;
 import app.androidtoolkit.model.permissions.RuntimePermission;
+import app.androidtoolkit.service.ADBService;
 import javafx.collections.FXCollections;
 import javafx.collections.transformation.FilteredList;
 import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.TextFlow;
 
 import java.util.ArrayList;
@@ -13,6 +18,8 @@ import java.util.List;
 
 public class PackagePermissionsController {
     private final AppState appState = AppState.getInstance();
+    private final ADBService adb = ADBService.getInstance();
+
     public ListView<InstallPermission> installPermissionsList;
     public ListView<RuntimePermission> runtimePermissionsList;
     public TextFlow permissionDetails;
@@ -46,15 +53,68 @@ public class PackagePermissionsController {
         });
 
         runtimePermissionsList.setCellFactory(listView -> new ListCell<>() {
+            private final Label nameLabel = new Label();
+            private final Label statusLabel = new Label();
+
+            private final Button grantButton = new Button("Grant");
+            private final Button revokeButton = new Button("Revoke");
+
+            private final VBox textBox = new VBox(2, nameLabel, statusLabel);
+            private final Region spacer = new Region();
+            private final HBox buttonBox = new HBox(5, grantButton, revokeButton);
+            private final HBox container = new HBox(10, textBox, spacer, buttonBox);
+
+            {
+                HBox.setHgrow(spacer, Priority.ALWAYS);
+
+                grantButton.setOnAction(_ -> {
+                    RuntimePermission item = getItem();
+                    if (item != null) {
+                        try {
+                            adb.grantPermission(appState.getSelectedPackage().get().getPackageName(), item.fullName(), appState.getSelectedUser().get().id());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        updateStatus(item);
+                        appState.forceUpdateSelectedPackage();
+                        applyFilters();
+                    }
+                });
+
+                revokeButton.setOnAction(_ -> {
+                    RuntimePermission item = getItem();
+                    if (item != null) {
+                        try {
+                            adb.revokePermission(appState.getSelectedPackage().get().getPackageName(), item.fullName(), appState.getSelectedUser().get().id());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        updateStatus(item);
+                        appState.forceUpdateSelectedPackage();
+                        applyFilters();
+                    }
+                });
+            }
+
             @Override
             protected void updateItem(RuntimePermission item, boolean empty) {
                 super.updateItem(item, empty);
 
                 if (empty || item == null) {
-                    setText(null);
+                    setGraphic(null);
                 } else {
-                    setText(item.shortName());
+                    nameLabel.setText(item.shortName());
+                    updateStatus(item);
+                    setGraphic(container);
                 }
+            }
+
+            private void updateStatus(RuntimePermission item) {
+                boolean granted = item.granted(); // implement this
+
+                statusLabel.setText(granted ? "Granted" : "Revoked");
+                grantButton.setDisable(granted);
+                revokeButton.setDisable(!granted);
             }
         });
 

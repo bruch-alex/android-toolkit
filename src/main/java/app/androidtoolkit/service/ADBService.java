@@ -256,10 +256,44 @@ public class ADBService {
         System.out.println("Extracted package info size: " + temp.size());
         var parsedPackage = PackageDetailsParser.getPackageDetails(temp, getUsers(connectedIDevice));
         System.out.println("Parsed package info: " + parsedPackage);
-        if (appPackage.merge(parsedPackage)){
+        if (appPackage.merge(parsedPackage)) {
             System.out.println("Package info updated: " + appPackage);
         } else {
             System.out.println("Package info not updated: " + appPackage);
         }
+    }
+
+    public void revokePermission(String packageName, String permissionFullName, String uid) throws ShellCommandUnresponsiveException, AdbCommandRejectedException, IOException, TimeoutException {
+        String command = "pm revoke " + packageName +
+                " " + permissionFullName +
+                " --user " + uid;
+        connectedIDevice.executeShellCommand(command, new MultiLineReceiver() {
+            @Override
+            public boolean isCancelled() {
+                return false;
+            }
+
+            @Override
+            public void processNewLines(String[] lines) {
+                System.out.println(lines);
+            }
+        });
+    }
+
+    public void grantPermission(String packageName, String permissionFullName, String uid) throws ShellCommandUnresponsiveException, AdbCommandRejectedException, IOException, TimeoutException {
+        String command = "pm grant " + packageName +
+                " " + permissionFullName +
+                " --user " + uid;
+        connectedIDevice.executeShellCommand(command, new MultiLineReceiver() {
+            @Override
+            public boolean isCancelled() {
+                return false;
+            }
+
+            @Override
+            public void processNewLines(String[] lines) {
+                System.out.println(lines);
+            }
+        });
     }
 }
