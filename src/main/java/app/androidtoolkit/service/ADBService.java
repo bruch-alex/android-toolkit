@@ -177,7 +177,7 @@ public class ADBService {
 
                     var instanceDetails = appPackage.getOrCreateInstanceDetails(user.id());
                     instanceDetails.setInstalled(true);
-                    instanceDetails.setDisabled(false);
+                    instanceDetails.setEnabled(false);
                 }
                 for (String packageName : thirdPartyAps) {
                     var appPackage = scannedPackages.computeIfAbsent(packageName, AppPackage::new);
@@ -185,13 +185,13 @@ public class ADBService {
 
                     var details = appPackage.getOrCreateInstanceDetails(user.id());
                     details.setInstalled(true);
-                    details.setDisabled(false);
+                    details.setEnabled(false);
                 }
                 for (String packageName : disabledAps) {
                     var appPackage = scannedPackages.computeIfAbsent(packageName, AppPackage::new);
                     var details = appPackage.getOrCreateInstanceDetails(user.id());
                     details.setInstalled(true);
-                    details.setDisabled(true);
+                    details.setEnabled(true);
                 }
             }
         } catch (Exception e) {
@@ -275,7 +275,9 @@ public class ADBService {
 
             @Override
             public void processNewLines(String[] lines) {
-                System.out.println(lines);
+                for (String line : lines) {
+                    System.out.println(line);
+                }
             }
         });
     }
@@ -292,7 +294,45 @@ public class ADBService {
 
             @Override
             public void processNewLines(String[] lines) {
-                System.out.println(lines);
+                for (String line : lines) {
+                    System.out.println(line);
+                }
+            }
+        });
+    }
+
+    public void setEnabledToDisabled(String packageName, String uid) throws ShellCommandUnresponsiveException, AdbCommandRejectedException, IOException, TimeoutException {
+        String command = "pm disable-user " + packageName +
+                " --user " + uid;
+        connectedIDevice.executeShellCommand(command, new MultiLineReceiver() {
+            @Override
+            public void processNewLines(String[] lines) {
+                for (String line : lines) {
+                    System.out.println(line);
+                }
+            }
+
+            @Override
+            public boolean isCancelled() {
+                return false;
+            }
+        });
+    }
+
+    public void setEnabledToDefaultState(String packageName, String uid) throws ShellCommandUnresponsiveException, AdbCommandRejectedException, IOException, TimeoutException {
+        String command = "pm default-state " + packageName +
+                " --user " + uid;
+        connectedIDevice.executeShellCommand(command, new MultiLineReceiver() {
+            @Override
+            public void processNewLines(String[] lines) {
+                for (String line : lines) {
+                    System.out.println(line);
+                }
+            }
+
+            @Override
+            public boolean isCancelled() {
+                return false;
             }
         });
     }

@@ -23,10 +23,12 @@
     </rowConstraints>
 
     <VBox spacing="10" GridPane.columnIndex="0" GridPane.rowIndex="0">
-        <Label text="Package Details"/>
-        <HBox>
-            <Label text="packageName:"/>
-            <Label fx:id="packageNameLabel"/>
+        <Label fx:id="packageNameLabel" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+        <Label fx:id="enabledStatusLabel" />
+        <HBox spacing="10">
+            <Button fx:id="toggleEnabledStatusButton" text="Disable/Enable"/>
+            <Button text="Remove"/>
+            <Button text="Delete data"/>
         </HBox>
         <HBox>
             <Label text="appId:"/>
