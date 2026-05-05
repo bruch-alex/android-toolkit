@@ -78,16 +78,9 @@ jobs:
 
       - name: Build AppImage
         run: |
-          ARCH=x86_64 ./appimagetool-x86_64.AppImage AppDir
+          ARCH=x86_64 ./appimagetool-x86_64.AppImage AppDir android-toolkit-linux.AppImage
 
-      - name: Rename artifact
-        id: build
-        run: |
-            FILE=$(ls *.AppImage)
-            mv "$FILE" android-toolkit-linux.AppImage
-            echo "artifact=android-toolkit-linux.AppImage" >> $GITHUB_OUTPUT
-
-            - uses: actions/upload-artifact@v4
-              with:
-                name: linux
-                path: android-toolkit-linux.AppImage
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: android-toolkit-linux.AppImage
