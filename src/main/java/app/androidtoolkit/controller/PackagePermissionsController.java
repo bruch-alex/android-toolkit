@@ -113,6 +113,7 @@ public class PackagePermissionsController {
                 boolean granted = item.granted(); // implement this
 
                 statusLabel.setText(granted ? "Granted" : "Revoked");
+                statusLabel.setStyle("-fx-font-style: italic;");
                 grantButton.setDisable(granted);
                 revokeButton.setDisable(!granted);
             }
