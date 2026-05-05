@@ -15,8 +15,9 @@ jobs:
 
       - uses: actions/setup-java@v5
         with:
-          distribution: 'temurin'
-          java-version: '25'
+          distribution: liberica
+          java-version: 25
+          java-package: 'jdk+fx'
 
       - name: Build
         run: mvn clean package
