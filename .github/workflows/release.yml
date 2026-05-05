@@ -103,7 +103,6 @@ jobs:
       - name: Package Windows Portable App
         run: |
           jpackage ^
-            --type app-image ^
             --name AndroidToolkit ^
             --input target ^
             --main-jar android-toolkit.jar ^
