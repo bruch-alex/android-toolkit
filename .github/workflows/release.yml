@@ -100,13 +100,17 @@ jobs:
       - name: Build project
         run: mvn clean package
 
+      - name: Prepare JAR
+        run: |
+          cp target/*.jar target/app.jar
+
       - name: Create Windows EXE
         shell: pwsh
         run: |
           jpackage `
             --name AndroidToolkit `
             --input target `
-            --main-jar android-toolkit.jar `
+            --main-jar app.jar `
             --main-class app.androidtoolkit.Launcher `
             --dest dist `
             --java-options "--enable-native-access=ALL-UNNAMED"
