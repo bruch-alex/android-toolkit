@@ -177,7 +177,7 @@ public class ADBService {
 
                     var instanceDetails = appPackage.getOrCreateInstanceDetails(user.id());
                     instanceDetails.setInstalled(true);
-                    instanceDetails.setEnabled(false);
+                    instanceDetails.setEnabled(true);
                 }
                 for (String packageName : thirdPartyAps) {
                     var appPackage = scannedPackages.computeIfAbsent(packageName, AppPackage::new);
@@ -185,13 +185,13 @@ public class ADBService {
 
                     var details = appPackage.getOrCreateInstanceDetails(user.id());
                     details.setInstalled(true);
-                    details.setEnabled(false);
+                    details.setEnabled(true);
                 }
                 for (String packageName : disabledAps) {
                     var appPackage = scannedPackages.computeIfAbsent(packageName, AppPackage::new);
                     var details = appPackage.getOrCreateInstanceDetails(user.id());
                     details.setInstalled(true);
-                    details.setEnabled(true);
+                    details.setEnabled(false);
                 }
             }
         } catch (Exception e) {

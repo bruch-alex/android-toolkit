@@ -5,6 +5,7 @@ import app.androidtoolkit.model.AndroidUser;
 import app.androidtoolkit.model.AppPackage;
 import app.androidtoolkit.viewmodel.DeviceView;
 import javafx.animation.PauseTransition;
+import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.MapChangeListener;
@@ -12,6 +13,9 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.util.Duration;
 
 import java.util.Comparator;
@@ -26,13 +30,13 @@ public class PackageListController {
     public Label totalInstalledAppsLabel;
     public Label matchedAppsLabel;
     public ComboBox<AndroidUser> selectedUserBox;
+    public CheckBox hideDisabledAppsCheckBox;
+    PauseTransition delay = new PauseTransition(Duration.millis(200));
     private FilteredList<AppPackage> filteredApps;
-    PauseTransition delay = new PauseTransition(Duration.millis(300));
-
 
     public void initialize() {
         setupUI();
-        appState.getConnectedDevice().addListener((observableValue, deviceView, newValue) -> {
+        appState.getConnectedDevice().addListener((_, _, newValue) -> {
             if (newValue != null) {
                 onDeviceConnect(newValue);
                 applyFilters();
@@ -74,8 +78,8 @@ public class PackageListController {
 
         searchField.textProperty().addListener((_, _, _) -> applyFilters());
         hideSystemApps.selectedProperty().addListener((_, _, _) -> applyFilters());
+        hideDisabledAppsCheckBox.selectedProperty().addListener((_, _, _) -> applyFilters());
         packageList.getSelectionModel().selectedItemProperty().addListener((_, _, newValue) -> {
-
             delay.stop();
             delay.setOnFinished(_ -> {
                 if (newValue != null) {
@@ -157,7 +161,8 @@ public class PackageListController {
                     && app.getPackageName().toLowerCase().contains(query));
 
             var matchesSystemFilter = !hideSystemApps.isSelected() || !app.isSystemApp();
-            return matchesSearch && matchesSystemFilter;
+            var matchesDisabledFilter = !hideDisabledAppsCheckBox.isSelected() || app.getInstanceDetailsMap().get(appState.getSelectedUser().get().id()).isEnabled();
+            return matchesSearch && matchesSystemFilter && matchesDisabledFilter;
         });
     }
 }

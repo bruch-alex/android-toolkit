@@ -13,21 +13,23 @@
         <Insets top="5" right="5" bottom="5" left="5"/>
     </padding>
 
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <TextField fx:id="searchField"
+                   promptText="Search packages..."
+                   HBox.hgrow="ALWAYS"/>
+        <VBox>
+            <CheckBox fx:id="hideSystemApps" text="Hide system apps" selected="true"/>
+            <CheckBox fx:id="hideDisabledAppsCheckBox" text="Hide disabled apps"/>
+        </VBox>
+
+    </HBox>
+
     <HBox alignment="CENTER_LEFT">
         <Label text="On device: "/>
         <Label fx:id="totalInstalledAppsLabel" text="number"/>
     </HBox>
 
-    <HBox spacing="10" alignment="CENTER_LEFT">
-        <TextField fx:id="searchField"
-                   promptText="Search packages..."
-                   HBox.hgrow="ALWAYS"/>
-        <CheckBox fx:id="hideSystemApps" text="Hide system apps" selected="true"/>
-    </HBox>
-
-
     <HBox spacing="10" alignment="CENTER">
-
         <HBox alignment="CENTER_LEFT">
             <Label text="Matched: "/>
             <Label fx:id="matchedAppsLabel" text="number"/>
