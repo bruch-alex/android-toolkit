@@ -31,7 +31,7 @@ public class PackagePermissionsController {
 
     public void initialize() {
         setupUI();
-        appState.getConnectedDevice().addListener((observableValue, deviceView, newDevice) -> {
+        appState.getConnectedDevice().addListener((_, _, newDevice) -> {
             if (newDevice != null) {
                 dataLogic();
             }
@@ -39,7 +39,7 @@ public class PackagePermissionsController {
     }
 
     public void setupUI() {
-        installPermissionsList.setCellFactory(listView -> new ListCell<>() {
+        installPermissionsList.setCellFactory(_ -> new ListCell<>() {
             @Override
             protected void updateItem(InstallPermission item, boolean empty) {
                 super.updateItem(item, empty);
@@ -52,7 +52,7 @@ public class PackagePermissionsController {
             }
         });
 
-        runtimePermissionsList.setCellFactory(listView -> new ListCell<>() {
+        runtimePermissionsList.setCellFactory(_ -> new ListCell<>() {
             private final Label nameLabel = new Label();
             private final Label statusLabel = new Label();
 
@@ -110,7 +110,7 @@ public class PackagePermissionsController {
             }
 
             private void updateStatus(RuntimePermission item) {
-                boolean granted = item.granted(); // implement this
+                boolean granted = item.granted();
 
                 statusLabel.setText(granted ? "Granted" : "Revoked");
                 statusLabel.setStyle("-fx-font-style: italic;");
@@ -121,7 +121,7 @@ public class PackagePermissionsController {
 
         showOnlyGrantedRuntimeCheckbox.selectedProperty().addListener((_, _, _) -> applyFilters());
 
-        refreshRuntimeButton.setOnAction(e -> {
+        refreshRuntimeButton.setOnAction(_ -> {
             appState.forceUpdateSelectedPackage();
             applyFilters();
         });
