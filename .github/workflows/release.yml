@@ -19,7 +19,7 @@ jobs:
           java-version: '25'
 
       - name: Build
-        run: mvn clean build
+        run: mvn clean package
 
       - name: Create custom runtime (jlink)
         run: |
