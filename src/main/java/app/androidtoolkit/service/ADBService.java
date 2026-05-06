@@ -14,7 +14,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -22,7 +21,6 @@ import java.util.stream.Stream;
 public class ADBService {
     private final static ADBService INSTANCE = new ADBService();
     private final AppState appState = AppState.getInstance();
-    private final AtomicBoolean refreshRunning = new AtomicBoolean(false);
     private IDevice connectedIDevice = null;
 
     public static ADBService getInstance() {
@@ -343,7 +341,11 @@ public class ADBService {
             @Override
             public void processNewLines(String[] lines) {
                 for (String line : lines) {
-                    System.out.println(line);
+                    if (line.contains("Success")) {
+                        System.out.println("App deleted: " + packageName);
+                        appState.getConnectedDevice().get().getPackages().remove(packageName);
+                        return;
+                    }
                 }
             }
 
@@ -352,5 +354,6 @@ public class ADBService {
                 return false;
             }
         });
+
     }
 }

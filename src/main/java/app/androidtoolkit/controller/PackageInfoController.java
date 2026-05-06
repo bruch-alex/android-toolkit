@@ -2,15 +2,10 @@ package app.androidtoolkit.controller;
 
 import app.androidtoolkit.AppState;
 import app.androidtoolkit.service.ADBService;
-import com.android.ddmlib.AdbCommandRejectedException;
-import com.android.ddmlib.ShellCommandUnresponsiveException;
-import com.android.ddmlib.TimeoutException;
 import javafx.collections.FXCollections;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
-
-import java.io.IOException;
 
 public class PackageInfoController {
     private final AppState appState = AppState.getInstance();
@@ -30,6 +25,11 @@ public class PackageInfoController {
             if (newDevice != null) {
                 appState.getSelectedPackage().addListener((_, _, newPackage) -> {
                     if (newPackage == null) {
+                        packageNameLabel.setText("No package selected");
+                        appIdLabel.setText("");
+                        versionNameLabel.setText("");
+                        totalQueriedPackagesLabel.setText("");
+                        queriedPackagesListView.setItems(FXCollections.observableArrayList());
                         return;
                     }
                     var enabled = newPackage.getInstanceDetailsMap().get(appState.getSelectedUser().get().id()).isEnabled();

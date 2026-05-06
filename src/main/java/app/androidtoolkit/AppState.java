@@ -1,7 +1,5 @@
 package app.androidtoolkit;
 
-//import app.androidtoolkit.model.permissions.AndroidPermission;
-
 import app.androidtoolkit.model.AndroidUser;
 import app.androidtoolkit.model.AppPackage;
 import app.androidtoolkit.viewmodel.DeviceView;
