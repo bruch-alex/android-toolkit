@@ -34,7 +34,7 @@ public class ADBService {
                 Path.of(System.getProperty("user.home"), "Android", "Sdk"),
                 Path.of(System.getProperty("user.home"), "android-sdk"),
                 Path.of("/usr/lib/android-sdk"),
-                Path.of(System.getProperty("user.home"),"platform-tools","adb.exe")
+                Path.of(System.getProperty("user.home"),"platform-tools")
         ).filter(Objects::nonNull).toList();
 
         for (Path sdkRoot : paths) {
