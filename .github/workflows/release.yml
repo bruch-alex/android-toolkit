@@ -110,6 +110,7 @@ jobs:
           jpackage `
             --name AndroidToolkit `
             --win-dir-chooser `
+            --win-per-user-install `
             --win-shortcut `
             --input target `
             --main-jar app.jar `
