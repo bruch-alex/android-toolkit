@@ -2,10 +2,15 @@ package app.androidtoolkit.controller;
 
 import app.androidtoolkit.AppState;
 import app.androidtoolkit.service.ADBService;
+import com.android.ddmlib.AdbCommandRejectedException;
+import com.android.ddmlib.ShellCommandUnresponsiveException;
+import com.android.ddmlib.TimeoutException;
 import javafx.collections.FXCollections;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+
+import java.io.IOException;
 
 public class PackageInfoController {
     private final AppState appState = AppState.getInstance();
@@ -17,6 +22,7 @@ public class PackageInfoController {
     public Label appIdLabel;
     public Label versionNameLabel;
     public Button toggleEnabledStatusButton;
+    public Button deletePackageButton;
     public ListView<String> queriedPackagesListView;
 
     public void initialize() {
@@ -54,6 +60,16 @@ public class PackageInfoController {
                             }
                         }
                         appState.forceUpdateSelectedPackage();
+                    });
+
+                    deletePackageButton.setOnAction(_ -> {
+                        var uid = appState.getSelectedUser().get().id();
+                        var packageName = newPackage.getPackageName();
+                        try {
+                            adb.deleteAppForUser(packageName, uid);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     });
                 });
             }

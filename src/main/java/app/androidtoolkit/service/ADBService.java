@@ -336,4 +336,21 @@ public class ADBService {
             }
         });
     }
+
+    public void deleteAppForUser(String packageName, String uid) throws ShellCommandUnresponsiveException, AdbCommandRejectedException, IOException, TimeoutException {
+        String command = "pm uninstall " + "--user " + uid + " " + packageName;
+        connectedIDevice.executeShellCommand(command, new MultiLineReceiver() {
+            @Override
+            public void processNewLines(String[] lines) {
+                for (String line : lines) {
+                    System.out.println(line);
+                }
+            }
+
+            @Override
+            public boolean isCancelled() {
+                return false;
+            }
+        });
+    }
 }

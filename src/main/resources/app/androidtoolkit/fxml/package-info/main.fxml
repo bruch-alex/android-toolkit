@@ -27,7 +27,7 @@
         <Label fx:id="enabledStatusLabel" />
         <HBox spacing="10">
             <Button fx:id="toggleEnabledStatusButton" text="Disable/Enable"/>
-            <Button text="Remove"/>
+            <Button fx:id="deletePackageButton" text="Remove"/>
             <Button text="Delete data"/>
         </HBox>
         <HBox>
