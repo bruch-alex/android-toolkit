@@ -56,44 +56,17 @@ public class PackagePermissionsController {
             private final Label nameLabel = new Label();
             private final Label statusLabel = new Label();
 
-            private final Button grantButton = new Button("Grant");
-            private final Button revokeButton = new Button("Revoke");
+            private final Button actionButton = new Button("");
+//            private final Button grantButton = new Button("Grant");
+//            private final Button revokeButton = new Button("Revoke");
 
             private final VBox textBox = new VBox(2, nameLabel, statusLabel);
             private final Region spacer = new Region();
-            private final HBox buttonBox = new HBox(5, grantButton, revokeButton);
-            private final HBox container = new HBox(10, textBox, spacer, buttonBox);
+//            private final HBox buttonBox = new HBox(5, grantButton, revokeButton);
+            private final HBox container = new HBox(10, textBox, spacer, actionButton);
 
             {
                 HBox.setHgrow(spacer, Priority.ALWAYS);
-
-                grantButton.setOnAction(_ -> {
-                    RuntimePermission item = getItem();
-                    if (item != null) {
-                        try {
-                            adb.grantPermission(appState.getSelectedPackage().get().getPackageName(), item.fullName(), appState.getSelectedUser().get().id());
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        updateStatus(item);
-                        appState.forceUpdateSelectedPackage();
-                        applyFilters();
-                    }
-                });
-
-                revokeButton.setOnAction(_ -> {
-                    RuntimePermission item = getItem();
-                    if (item != null) {
-                        try {
-                            adb.revokePermission(appState.getSelectedPackage().get().getPackageName(), item.fullName(), appState.getSelectedUser().get().id());
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        updateStatus(item);
-                        appState.forceUpdateSelectedPackage();
-                        applyFilters();
-                    }
-                });
             }
 
             @Override
@@ -111,11 +84,47 @@ public class PackagePermissionsController {
 
             private void updateStatus(RuntimePermission item) {
                 boolean granted = item.granted();
-
+                if (granted) {
+                    setupRevokeButton();
+                } else {
+                    setupGrantButton();
+                }
                 statusLabel.setText(granted ? "Granted" : "Revoked");
                 statusLabel.setStyle("-fx-font-style: italic;");
-                grantButton.setDisable(granted);
-                revokeButton.setDisable(!granted);
+            }
+
+            private void setupGrantButton(){
+                actionButton.setText("Grant");
+                actionButton.setOnAction(_ -> {
+                    RuntimePermission item = getItem();
+                    if (item != null) {
+                        try {
+                            adb.grantPermission(appState.getSelectedPackage().get().getPackageName(), item.fullName(), appState.getSelectedUser().get().id());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        updateStatus(item);
+                        appState.forceUpdateSelectedPackage();
+                        applyFilters();
+                    }
+                });
+            }
+
+            private void setupRevokeButton(){
+                actionButton.setText("Revoke");
+                actionButton.setOnAction(_ -> {
+                    RuntimePermission item = getItem();
+                    if (item != null) {
+                        try {
+                            adb.revokePermission(appState.getSelectedPackage().get().getPackageName(), item.fullName(), appState.getSelectedUser().get().id());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        updateStatus(item);
+                        appState.forceUpdateSelectedPackage();
+                        applyFilters();
+                    }
+                });
             }
         });
 
