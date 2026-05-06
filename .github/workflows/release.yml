@@ -109,6 +109,8 @@ jobs:
         run: |
           jpackage `
             --name AndroidToolkit `
+            --win-dir-chooser `
+            --win-shortcut `
             --input target `
             --main-jar app.jar `
             --main-class app.androidtoolkit.Launcher `
