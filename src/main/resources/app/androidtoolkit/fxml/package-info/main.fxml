@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import atlantafx.base.controls.ModalPane?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
@@ -24,7 +25,7 @@
 
     <VBox spacing="10" GridPane.columnIndex="0" GridPane.rowIndex="0">
         <Label fx:id="packageNameLabel" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
-        <Label fx:id="enabledStatusLabel" />
+        <Label fx:id="enabledStatusLabel"/>
         <HBox spacing="10">
             <Button fx:id="toggleEnabledStatusButton" text="Disable/Enable"/>
             <Button fx:id="deletePackageButton" text="Remove"/>
