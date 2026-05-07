@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import atlantafx.base.controls.ModalPane?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <GridPane xmlns:fx="http://javafx.com/fxml"
           fx:controller="app.androidtoolkit.controller.PackageInfoController"
-          hgap="10" vgap="10">
+          hgap="10" vgap="10"
+          fx:id="container"
+          visible="false">
 
     <padding>
         <Insets top="10" right="10" bottom="10" left="10"/>

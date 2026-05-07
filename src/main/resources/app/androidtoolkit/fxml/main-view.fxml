@@ -40,6 +40,7 @@
     <center>
         <HBox>
             <fx:include source="shared/package-list.fxml"/>
+            <Separator orientation="VERTICAL"/>
             <TabPane tabClosingPolicy="UNAVAILABLE" HBox.hgrow="ALWAYS">
                 <Tab text="Package info">
                     <fx:include source="package-info/main.fxml" fx:id="packageInfo"/>

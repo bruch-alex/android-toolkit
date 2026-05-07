@@ -7,7 +7,9 @@
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="app.androidtoolkit.controller.PackagePermissionsController"
-      spacing="10" VBox.vgrow="ALWAYS">
+      spacing="10" VBox.vgrow="ALWAYS"
+      fx:id="container"
+      visible="false">
 
     <padding>
         <Insets top="10" right="10" bottom="10" left="10"/>
@@ -57,7 +59,6 @@
                 <Region HBox.hgrow="ALWAYS"/>
                 <CheckBox fx:id="showOnlyGrantedRuntimeCheckbox" text="Show only granted"/>
             </HBox>
-            <Button fx:id="refreshRuntimeButton" text="Refresh"/>
             <ListView fx:id="runtimePermissionsList"
                       prefWidth="400"
                       VBox.vgrow="ALWAYS"/>

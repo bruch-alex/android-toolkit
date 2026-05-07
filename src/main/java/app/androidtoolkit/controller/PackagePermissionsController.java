@@ -6,6 +6,7 @@ import app.androidtoolkit.model.permissions.RuntimePermission;
 import app.androidtoolkit.service.ADBService;
 import javafx.collections.FXCollections;
 import javafx.collections.transformation.FilteredList;
+import javafx.geometry.Orientation;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -26,7 +27,8 @@ public class PackagePermissionsController {
     public Label totalInstallPermissionsLabel;
     public Label totalRuntimePermissionsLabel;
     public CheckBox showOnlyGrantedRuntimeCheckbox;
-    public Button refreshRuntimeButton;
+    public VBox container;
+
     private FilteredList<RuntimePermission> filteredRuntimePermissions;
 
     public void initialize() {
@@ -130,9 +132,8 @@ public class PackagePermissionsController {
 
         showOnlyGrantedRuntimeCheckbox.selectedProperty().addListener((_, _, _) -> applyFilters());
 
-        refreshRuntimeButton.setOnAction(_ -> {
-            appState.forceUpdateSelectedPackage();
-            applyFilters();
+        appState.getSelectedPackage().addListener((_, _, newValue) -> {
+            container.setVisible(newValue != null);
         });
     }
 

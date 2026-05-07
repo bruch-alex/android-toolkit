@@ -6,6 +6,7 @@ import javafx.collections.FXCollections;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.layout.GridPane;
 
 public class PackageInfoController {
     private final AppState appState = AppState.getInstance();
@@ -19,16 +20,18 @@ public class PackageInfoController {
     public Button toggleEnabledStatusButton;
     public Button deletePackageButton;
     public ListView<String> queriedPackagesListView;
+    public GridPane container;
 
     public void initialize() {
         appState.getConnectedDevice().addListener((_, _, newDevice) -> {
             if (newDevice != null) {
                 appState.getSelectedPackage().addListener((_, _, newPackage) -> {
                     if (newPackage == null) {
-                        packageNameLabel.setText("No package selected");
-                        appIdLabel.setText("");
-                        versionNameLabel.setText("");
-                        totalQueriedPackagesLabel.setText("");
+                        container.setVisible(false);
+//                        packageNameLabel.setText("No package selected");
+//                        appIdLabel.setText("");
+//                        versionNameLabel.setText("");
+//                        totalQueriedPackagesLabel.setText("");
                         queriedPackagesListView.setItems(FXCollections.observableArrayList());
                         return;
                     }
@@ -71,6 +74,7 @@ public class PackageInfoController {
                             e.printStackTrace();
                         }
                     });
+                    container.setVisible(true);
                 });
             }
         });
