@@ -135,6 +135,18 @@ public class PackagePermissionsController {
         appState.getSelectedPackage().addListener((_, _, newValue) -> {
             container.setVisible(newValue != null);
         });
+
+        runtimePermissionsList.getSelectionModel().selectedItemProperty().addListener((_,_,newValue)->{
+            if (newValue != null) {
+                installPermissionsList.getSelectionModel().clearSelection();
+            }
+        });
+
+        installPermissionsList.getSelectionModel().selectedItemProperty().addListener((_,_,newValue)->{
+            if (newValue != null) {
+                runtimePermissionsList.getSelectionModel().clearSelection();
+            }
+        });
     }
 
     public void dataLogic() {
