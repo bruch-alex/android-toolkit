@@ -44,7 +44,10 @@
             </HBox>
             <ListView fx:id="installPermissionsList"
                       prefWidth="400"
-                      VBox.vgrow="ALWAYS"/>
+                      styleClass="striped"
+                      VBox.vgrow="ALWAYS"
+                      style="-color-cell-bg-selected-focused: -color-accent-emphasis;
+                             -color-cell-fg-selected-focused: -color-fg-emphasis"/>
         </VBox>
 
         <VBox GridPane.rowIndex="1" GridPane.columnIndex="1" spacing="2" VBox.vgrow="ALWAYS">
@@ -61,7 +64,10 @@
             </HBox>
             <ListView fx:id="runtimePermissionsList"
                       prefWidth="400"
-                      VBox.vgrow="ALWAYS"/>
+                      styleClass="striped"
+                      VBox.vgrow="ALWAYS"
+                      style="-color-cell-bg-selected-focused: -color-accent-emphasis;
+                             -color-cell-fg-selected-focused: -color-fg-emphasis"/>
         </VBox>
 
         <VBox GridPane.rowIndex="1" GridPane.columnIndex="2" spacing="2">

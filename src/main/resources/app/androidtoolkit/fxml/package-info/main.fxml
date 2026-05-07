@@ -52,7 +52,11 @@
             <Label fx:id="totalQueriedPackagesLabel" text="number"/>
         </HBox>
 
-        <ListView fx:id="queriedPackagesListView" VBox.vgrow="ALWAYS"/>
+        <ListView fx:id="queriedPackagesListView"
+                  VBox.vgrow="ALWAYS"
+                  styleClass="striped"
+                  style="-color-cell-bg-selected-focused: -color-accent-emphasis;
+                         -color-cell-fg-selected-focused: -color-fg-emphasis"/>
     </VBox>
 
 </GridPane>

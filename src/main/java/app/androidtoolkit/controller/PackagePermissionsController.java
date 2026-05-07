@@ -4,9 +4,10 @@ import app.androidtoolkit.AppState;
 import app.androidtoolkit.model.permissions.InstallPermission;
 import app.androidtoolkit.model.permissions.RuntimePermission;
 import app.androidtoolkit.service.ADBService;
+import atlantafx.base.theme.Styles;
 import javafx.collections.FXCollections;
 import javafx.collections.transformation.FilteredList;
-import javafx.geometry.Orientation;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -59,16 +60,15 @@ public class PackagePermissionsController {
             private final Label statusLabel = new Label();
 
             private final Button actionButton = new Button("");
-//            private final Button grantButton = new Button("Grant");
-//            private final Button revokeButton = new Button("Revoke");
 
             private final VBox textBox = new VBox(2, nameLabel, statusLabel);
+            private final VBox buttonBox = new VBox(2, actionButton);
             private final Region spacer = new Region();
-//            private final HBox buttonBox = new HBox(5, grantButton, revokeButton);
-            private final HBox container = new HBox(10, textBox, spacer, actionButton);
+            private final HBox container = new HBox(10, textBox, spacer, buttonBox);
 
             {
                 HBox.setHgrow(spacer, Priority.ALWAYS);
+                buttonBox.alignmentProperty().set(Pos.CENTER);
             }
 
             @Override
@@ -92,16 +92,30 @@ public class PackagePermissionsController {
                     setupGrantButton();
                 }
                 statusLabel.setText(granted ? "Granted" : "Revoked");
+                statusLabel.getStyleClass().removeAll(
+                        Styles.SUCCESS,
+                        Styles.DANGER
+                );
+
+                statusLabel.getStyleClass().add(
+                        granted
+                                ? Styles.DANGER
+                                : Styles.SUCCESS
+                );
                 statusLabel.setStyle("-fx-font-style: italic;");
             }
 
-            private void setupGrantButton(){
+            private void setupGrantButton() {
                 actionButton.setText("Grant");
                 actionButton.setOnAction(_ -> {
                     RuntimePermission item = getItem();
                     if (item != null) {
                         try {
-                            adb.grantPermission(appState.getSelectedPackage().get().getPackageName(), item.fullName(), appState.getSelectedUser().get().id());
+                            adb.grantPermission(
+                                    appState.getSelectedPackage().get().getPackageName(),
+                                    item.fullName(),
+                                    appState.getSelectedUser().get().id()
+                            );
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -109,10 +123,11 @@ public class PackagePermissionsController {
                         appState.forceUpdateSelectedPackage();
                         applyFilters();
                     }
+                    actionButton.getParent().requestFocus();
                 });
             }
 
-            private void setupRevokeButton(){
+            private void setupRevokeButton() {
                 actionButton.setText("Revoke");
                 actionButton.setOnAction(_ -> {
                     RuntimePermission item = getItem();
@@ -126,23 +141,23 @@ public class PackagePermissionsController {
                         appState.forceUpdateSelectedPackage();
                         applyFilters();
                     }
+                    actionButton.getParent().requestFocus();
                 });
             }
         });
-
         showOnlyGrantedRuntimeCheckbox.selectedProperty().addListener((_, _, _) -> applyFilters());
 
         appState.getSelectedPackage().addListener((_, _, newValue) -> {
             container.setVisible(newValue != null);
         });
 
-        runtimePermissionsList.getSelectionModel().selectedItemProperty().addListener((_,_,newValue)->{
+        runtimePermissionsList.getSelectionModel().selectedItemProperty().addListener((_, _, newValue) -> {
             if (newValue != null) {
                 installPermissionsList.getSelectionModel().clearSelection();
             }
         });
 
-        installPermissionsList.getSelectionModel().selectedItemProperty().addListener((_,_,newValue)->{
+        installPermissionsList.getSelectionModel().selectedItemProperty().addListener((_, _, newValue) -> {
             if (newValue != null) {
                 runtimePermissionsList.getSelectionModel().clearSelection();
             }
