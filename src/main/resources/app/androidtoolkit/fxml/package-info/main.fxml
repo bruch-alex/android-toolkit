@@ -5,7 +5,9 @@
 <?import javafx.scene.layout.*?>
 <GridPane xmlns:fx="http://javafx.com/fxml"
           fx:controller="app.androidtoolkit.controller.PackageInfoController"
-          hgap="10" vgap="10">
+          hgap="10" vgap="10"
+          fx:id="container"
+          visible="false">
 
     <padding>
         <Insets top="10" right="10" bottom="10" left="10"/>
@@ -24,7 +26,7 @@
 
     <VBox spacing="10" GridPane.columnIndex="0" GridPane.rowIndex="0">
         <Label fx:id="packageNameLabel" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
-        <Label fx:id="enabledStatusLabel" />
+        <Label fx:id="enabledStatusLabel"/>
         <HBox spacing="10">
             <Button fx:id="toggleEnabledStatusButton" text="Disable/Enable"/>
             <Button fx:id="deletePackageButton" text="Remove"/>
@@ -50,7 +52,11 @@
             <Label fx:id="totalQueriedPackagesLabel" text="number"/>
         </HBox>
 
-        <ListView fx:id="queriedPackagesListView" VBox.vgrow="ALWAYS"/>
+        <ListView fx:id="queriedPackagesListView"
+                  VBox.vgrow="ALWAYS"
+                  styleClass="striped"
+                  style="-color-cell-bg-selected-focused: -color-accent-emphasis;
+                         -color-cell-fg-selected-focused: -color-fg-emphasis"/>
     </VBox>
 
 </GridPane>

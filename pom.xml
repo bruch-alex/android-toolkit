@@ -21,6 +21,8 @@
         <ddmlib.version>32.1.1</ddmlib.version>
         <jackson.core.version>2.21.2</jackson.core.version>
         <jackson.databind.version>3.1.2</jackson.databind.version>
+        <atlantafx.version>2.1.0</atlantafx.version>
+        <maven.jar.plugin.version>3.3.0</maven.jar.plugin.version>
     </properties>
 
     <repositories>
@@ -81,6 +83,11 @@
             <version>${jackson.databind.version}</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>io.github.mkpaz</groupId>
+            <artifactId>atlantafx-base</artifactId>
+            <version>${atlantafx.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -129,7 +136,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.3.0</version>
+                <version>${maven.jar.plugin.version}</version>
                 <configuration>
                     <archive>
                         <manifest>

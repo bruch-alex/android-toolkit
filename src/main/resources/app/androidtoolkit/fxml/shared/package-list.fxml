@@ -7,8 +7,7 @@
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="app.androidtoolkit.controller.PackageListController"
       spacing="10"
-      minWidth="400"
-      style="-fx-background-color: white; -fx-border-color: #dbe4ee;">
+      minWidth="400">
     <padding>
         <Insets top="5" right="5" bottom="5" left="5"/>
     </padding>
@@ -42,6 +41,9 @@
     </HBox>
 
     <ListView fx:id="packageList"
+              styleClass="striped"
+              style="-color-cell-bg-selected-focused: -color-accent-emphasis;
+                     -color-cell-fg-selected-focused: -color-fg-emphasis"
               VBox.vgrow="ALWAYS"/>
 
 </VBox>

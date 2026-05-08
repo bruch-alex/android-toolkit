@@ -1,6 +1,7 @@
 package app.androidtoolkit;
 
 import app.androidtoolkit.service.ADBService;
+import atlantafx.base.theme.PrimerDark;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -11,6 +12,7 @@ import java.io.IOException;
 public class App extends Application {
     @Override
     public void start(Stage stage) throws IOException {
+        Application.setUserAgentStylesheet(new PrimerDark().getUserAgentStylesheet());
         ADBService adb = ADBService.getInstance();
         adb.start();
         FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource("fxml/main-view.fxml"));
