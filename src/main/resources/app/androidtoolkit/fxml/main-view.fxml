@@ -6,9 +6,22 @@
             fx:controller="app.androidtoolkit.controller.MainController">
 
     <top>
+        <MenuBar>
+            <Menu text="File">
+                <MenuItem text="Settings"/>
+            </Menu>
+            <Menu text="Help">
+                <MenuItem text="About"/>
+                <MenuItem text="Source Code"/>
+            </Menu>
+        </MenuBar>
+    </top>
+
+    <center>
         <HBox alignment="CENTER_LEFT"
               spacing="16"
-              style="-fx-padding: 10 14; ">
+              style="-fx-padding: 10 14; "
+              visible="false">
 
             <HBox spacing="6" alignment="CENTER_LEFT">
                 <Label text="Adb status:"/>
@@ -35,9 +48,6 @@
             </HBox>
 
         </HBox>
-    </top>
-
-    <center>
         <HBox>
             <fx:include source="shared/package-list.fxml"/>
             <Separator orientation="VERTICAL"/>
