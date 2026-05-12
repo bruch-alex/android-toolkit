@@ -11,13 +11,13 @@ import com.android.ddmlib.*;
 import javafx.application.Platform;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 public class ADBService {
     private final static ADBService INSTANCE = new ADBService();
@@ -37,7 +37,6 @@ public class ADBService {
         if (adbPath == null) {
             adbPath = ADBLocator.findAdbPath().orElseThrow(() -> new IllegalStateException("ADB not found. Please install ADB and add it to your PATH.")).toString();
         }
-//        var adbPath = ADBLocator.findAdbPath().orElseThrow(() -> new IllegalStateException("ADB not found. Please install ADB and add it to your PATH.")).toString();
         AndroidDebugBridge.init(false);
         AndroidDebugBridge bridge = AndroidDebugBridge.createBridge(adbPath, false, 5000, TimeUnit.MILLISECONDS);
         AndroidDebugBridge.addDeviceChangeListener(new AndroidDebugBridge.IDeviceChangeListener() {

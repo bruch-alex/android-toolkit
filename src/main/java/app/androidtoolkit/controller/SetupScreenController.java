@@ -27,10 +27,10 @@ public class SetupScreenController {
         adbStatusLabel.setText(ADBLocator.isAdbInstalled() ? "ADB installed" : "ADB not installed");
 
         setPathButton.setOnAction(_ -> onSetPathButton());
-        startButton.setOnAction(_ -> adb.start(customAdbPathTextField.getText()));
+        startButton.setOnAction(_ -> onStartButton());
     }
 
-    private void onSetPathButton(){
+    private void onSetPathButton() {
         DirectoryChooser chooser = new DirectoryChooser();
         chooser.setTitle("Select Android SDK Folder");
 
@@ -48,5 +48,9 @@ public class SetupScreenController {
                 adbStatusLabel.setText("Invalid ADB path");
             }
         }
+    }
+
+    private void onStartButton() {
+        adb.start(customAdbPathTextField.getText());
     }
 }
