@@ -20,8 +20,8 @@ public class App extends Application {
     public void start(Stage stage) throws IOException {
         this.primaryStage = stage;
         Application.setUserAgentStylesheet(new PrimerDark().getUserAgentStylesheet());
-        ADBService adb = ADBService.getInstance();
-        adb.start();
+//        ADBService adb = ADBService.getInstance();
+//        adb.start();
 
         FXMLLoader setupLoader = new FXMLLoader(App.class.getResource("fxml/setup-adb.fxml"));
         setupStage = new Scene(setupLoader.load(), 1920, 1080);

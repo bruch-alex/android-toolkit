@@ -2,6 +2,7 @@ package app.androidtoolkit.controller;
 
 import app.androidtoolkit.AppState;
 import app.androidtoolkit.service.ADBService;
+import app.androidtoolkit.utils.ADBLocator;
 import javafx.beans.binding.Bindings;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
@@ -20,7 +21,7 @@ public class MainController {
 
     public void initialize() {
         System.out.println("MAIN CONTROLLER: DEVICE INSTANCE: " + adb);
-        isAdbInstalledLabel.setText(adb.isAdbInstalled() ? "Installed" : "Not found");
+        isAdbInstalledLabel.setText(ADBLocator.isAdbInstalled() ? "Installed" : "Not found");
         deviceModelLabel.textProperty().bind(Bindings.selectString(appState.getConnectedDevice(), "model"));
         androidVersionLabel.textProperty().bind(Bindings.selectString(appState.getConnectedDevice(), "androidVersion"));
         deviceManufacturerLabel.textProperty().bind(Bindings.selectString(appState.getConnectedDevice(), "manufacturer"));

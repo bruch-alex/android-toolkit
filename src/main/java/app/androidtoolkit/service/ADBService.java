@@ -5,6 +5,7 @@ import app.androidtoolkit.mapper.AndroidDeviceMapper;
 import app.androidtoolkit.model.AndroidDevice;
 import app.androidtoolkit.model.AndroidUser;
 import app.androidtoolkit.model.AppPackage;
+import app.androidtoolkit.utils.ADBLocator;
 import app.androidtoolkit.utils.PackageDetailsParser;
 import com.android.ddmlib.*;
 import javafx.application.Platform;
@@ -27,41 +28,16 @@ public class ADBService {
         return INSTANCE;
     }
 
-    public static Optional<String> findAdbPath() {
-        List<Path> paths = Stream.of(
-                envPath("ANDROID_SDK_ROOT"),
-                envPath("ANDROID_HOME"),
-                Path.of(System.getProperty("user.home"), "Android", "Sdk"),
-                Path.of(System.getProperty("user.home"), "android-sdk"),
-                Path.of("/usr/lib/android-sdk"),
-                Path.of(System.getProperty("user.home"),"platform-tools")
-        ).filter(Objects::nonNull).toList();
-
-        for (Path sdkRoot : paths) {
-            Path adb = sdkRoot.resolve("platform-tools").resolve(isWindows() ? "adb.exe" : "adb");
-            if (Files.isRegularFile(adb) && Files.isExecutable(adb)) {
-                return Optional.of(adb.toString());
-            }
-        }
-        return Optional.empty();
-    }
-
-    private static boolean isWindows() {
-        return System.getProperty("os.name").toLowerCase().contains("win");
-    }
-
-    private static Path envPath(String name) {
-        var value = System.getenv(name);
-        return (value == null || value.isBlank()) ? null : Path.of(value);
-    }
-
-    public boolean isAdbInstalled() {
-        return findAdbPath().isPresent();
-    }
-
     public void start() {
+        start(null);
+    }
+
+    public void start(String adbPath) {
         System.out.println("Starting ADB service...");
-        var adbPath = findAdbPath().orElse("");
+        if (adbPath == null) {
+            adbPath = ADBLocator.findAdbPath().orElseThrow(() -> new IllegalStateException("ADB not found. Please install ADB and add it to your PATH.")).toString();
+        }
+//        var adbPath = ADBLocator.findAdbPath().orElseThrow(() -> new IllegalStateException("ADB not found. Please install ADB and add it to your PATH.")).toString();
         AndroidDebugBridge.init(false);
         AndroidDebugBridge bridge = AndroidDebugBridge.createBridge(adbPath, false, 5000, TimeUnit.MILLISECONDS);
         AndroidDebugBridge.addDeviceChangeListener(new AndroidDebugBridge.IDeviceChangeListener() {
