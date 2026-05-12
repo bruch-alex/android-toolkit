@@ -11,7 +11,9 @@ import com.android.ddmlib.*;
 import javafx.application.Platform;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -36,45 +38,154 @@ public class ADBService {
 
     public void start(String adbPath) {
 
-        if (adbPath == null) {
-            log.debug("Starting ADB service without adb path");
-            adbPath = ADBLocator.findAdbPath().orElseThrow(() -> new IllegalStateException("ADB not found. Please install ADB and add it to your PATH.")).toString();
+        try {
+
+            String resolvedAdbPath = resolveAdbPath(adbPath);
+
+            log.info("Starting ADB service using: {}", resolvedAdbPath);
+
+            initializeBridge();
+
+            AndroidDebugBridge bridge = createBridge(resolvedAdbPath);
+
+            registerDeviceListeners(bridge);
+
+            refreshDevices(bridge);
+
+            registerPackageSelectionListener();
+
+            log.info("ADB service started successfully");
+
+        } catch (Exception e) {
+
+            log.error("Failed to start ADB service", e);
+
+//            Platform.runLater(() ->
+//                    appState.showError(
+//                            "Failed to start ADB",
+//                            e.getMessage()
+//                    )
+//            );
         }
-        log.debug("Starting ADB service with adb path {}", adbPath);
-        AndroidDebugBridge.init(false);
-        AndroidDebugBridge bridge = AndroidDebugBridge.createBridge(adbPath, false, 5000, TimeUnit.MILLISECONDS);
-        AndroidDebugBridge.addDeviceChangeListener(new AndroidDebugBridge.IDeviceChangeListener() {
-            @Override
-            public void deviceConnected(IDevice device) {
-                log.debug("Device connected: {}", device);
-                refreshDevices(bridge);
-            }
+    }
 
-            @Override
-            public void deviceDisconnected(IDevice device) {
-                log.debug("Device disconnected: {}", device);
-                connectedIDevice = null;
-                Platform.runLater(appState::deviceDisconnected);
-                refreshDevices(bridge);
-            }
+    private String resolveAdbPath(String adbPath) {
 
-            @Override
-            public void deviceChanged(IDevice device, int changeMask) {
-                log.debug("Device changed: {}", device);
-                refreshDevices(bridge);
-            }
-        });
-        refreshDevices(bridge);
+        if (adbPath != null && !adbPath.isBlank()) {
+
+            log.debug("Using provided adb path: {}", adbPath);
+
+            return adbPath;
+        }
+
+        log.debug("No adb path provided, searching automatically");
+
+        return ADBLocator.findAdbPath()
+                .map(Path::toString)
+                .orElseThrow(() -> new IllegalStateException(
+                        "ADB not found. Please install Android Platform Tools."
+                ));
+    }
+
+    private void initializeBridge() {
+        if (AndroidDebugBridge.getBridge() == null) {
+            log.debug("Initializing AndroidDebugBridge");
+            AndroidDebugBridge.init(false);
+        }
+    }
+
+    private AndroidDebugBridge createBridge(String adbPath) {
+
+        log.debug("Creating AndroidDebugBridge");
+
+        AndroidDebugBridge bridge = AndroidDebugBridge.createBridge(
+                adbPath,
+                false,
+                5000,
+                TimeUnit.MILLISECONDS
+        );
+
+        if (bridge == null) {
+
+            throw new IllegalStateException(
+                    "Failed to create AndroidDebugBridge"
+            );
+        }
+
+        return bridge;
+    }
+
+    private void registerDeviceListeners(AndroidDebugBridge bridge) {
+
+        AndroidDebugBridge.addDeviceChangeListener(
+                new AndroidDebugBridge.IDeviceChangeListener() {
+
+                    @Override
+                    public void deviceConnected(IDevice device) {
+
+                        log.info("Device connected: {}", device.getSerialNumber());
+
+                        refreshDevices(bridge);
+                    }
+
+                    @Override
+                    public void deviceDisconnected(IDevice device) {
+
+                        log.info("Device disconnected: {}", device.getSerialNumber());
+
+                        connectedIDevice = null;
+
+                        Platform.runLater(appState::deviceDisconnected);
+
+                        refreshDevices(bridge);
+                    }
+
+                    @Override
+                    public void deviceChanged(IDevice device, int changeMask) {
+
+                        log.debug(
+                                "Device changed: {} mask={}",
+                                device.getSerialNumber(),
+                                changeMask
+                        );
+
+                        refreshDevices(bridge);
+                    }
+                }
+        );
+    }
+
+    private void registerPackageSelectionListener() {
 
         appState.getSelectedPackage().addListener((_, _, newValue) -> {
-            if (newValue != null) {
-                try {
-                    System.out.println("Scanning package info for: " + newValue.getPackageName());
-                    scanPackageInfoAndUpdateModel(newValue);
-                    System.out.println("Package info scanned: " + newValue.getPackageDetails().getInstalledPermissions().size());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+
+            if (newValue == null) {
+                return;
+            }
+
+            try {
+
+                log.debug(
+                        "Scanning package info for: {}",
+                        newValue.getPackageName()
+                );
+
+                scanPackageInfoAndUpdateModel(newValue);
+
+                log.info(
+                        "Package scan completed: {} permissions",
+                        newValue.getPackageDetails()
+                                .getInstalledPermissions()
+                                .size()
+                );
+
+            } catch (Exception e) {
+
+                log.error(
+                        "Failed to scan package: {}",
+                        newValue.getPackageName(),
+                        e
+                );
             }
         });
     }
