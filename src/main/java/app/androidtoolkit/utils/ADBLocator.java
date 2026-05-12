@@ -19,7 +19,7 @@ public final class ADBLocator {
     private ADBLocator() {
     }
 
-    public static Optional<Path> findAdbPath() {
+    public static Optional<Path> findInDefaultAdbLocations() {
 
         log.debug("Searching for adb executable");
 
@@ -47,20 +47,8 @@ public final class ADBLocator {
         return Optional.empty();
     }
 
-    public static Path requireAdb() {
-        return findAdbPath().orElseThrow(() -> {
-            log.error("ADB is required but was not found");
-
-            return new IllegalStateException("ADB not found. Install Android Platform Tools " + "and ensure adb is available in PATH or ANDROID_SDK_ROOT.");
-        });
-    }
-
     public static boolean isAdbInstalled() {
-        return findAdbPath().isPresent();
-    }
-
-    public static boolean isValidAdbPath(String input) {
-        return resolveAdbPath(input).isPresent();
+        return findInDefaultAdbLocations().isPresent();
     }
 
     public static Optional<Path> resolveAdbPath(String input) {

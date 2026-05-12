@@ -11,7 +11,6 @@ import com.android.ddmlib.*;
 import javafx.application.Platform;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -27,6 +26,7 @@ public class ADBService {
     private final static ADBService INSTANCE = new ADBService();
     private final AppState appState = AppState.getInstance();
     private IDevice connectedIDevice = null;
+    private AndroidDebugBridge bridge;
 
     public static ADBService getInstance() {
         return INSTANCE;
@@ -36,17 +36,21 @@ public class ADBService {
         start(null);
     }
 
+    public boolean isAdbServiceRunning() {
+        return bridge.isConnected();
+    }
+
     public void start(String adbPath) {
 
         try {
 
-            String resolvedAdbPath = resolveAdbPath(adbPath);
+//            String resolvedAdbPath = resolveAdbPath(adbPath);
 
-            log.info("Starting ADB service using: {}", resolvedAdbPath);
+            log.info("Starting ADB service using: {}", adbPath);
 
             initializeBridge();
 
-            AndroidDebugBridge bridge = createBridge(resolvedAdbPath);
+            bridge = createBridge(adbPath);
 
             registerDeviceListeners(bridge);
 
@@ -80,7 +84,7 @@ public class ADBService {
 
         log.debug("No adb path provided, searching automatically");
 
-        return ADBLocator.findAdbPath()
+        return ADBLocator.findInDefaultAdbLocations()
                 .map(Path::toString)
                 .orElseThrow(() -> new IllegalStateException(
                         "ADB not found. Please install Android Platform Tools."

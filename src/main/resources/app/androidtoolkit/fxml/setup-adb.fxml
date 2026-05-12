@@ -4,48 +4,81 @@
 <?import atlantafx.base.layout.InputGroup?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<AnchorPane xmlns="http://javafx.com/javafx"
+<BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="app.androidtoolkit.controller.SetupScreenController">
+            fx:controller="app.androidtoolkit.controller.SetupScreenController"
+            onMouseClicked="#onBackgroundClicked"
+            fx:id="rootPane">
 
-    <VBox spacing="16"
-          alignment="CENTER"
-          AnchorPane.topAnchor="20"
-          maxWidth="700"
-          prefWidth="700"
-          fillWidth="false"
-          AnchorPane.bottomAnchor="20"
-          AnchorPane.leftAnchor="20"
-          AnchorPane.rightAnchor="20">
+    <center>
 
-        <Card>
-            <body>
-                <VBox spacing="12" alignment="CENTER">
+        <StackPane>
 
-                    <InputGroup>
-                        <TextField fx:id="customAdbPathTextField"
-                                   promptText="Android SDK or adb path"/>
+            <VBox spacing="16"
+                  alignment="CENTER"
+                  maxWidth="700"
+                  prefWidth="700"
+            >
 
-                        <Button fx:id="setPathButton"
-                                text="Browse"/>
-                    </InputGroup>
+                <!-- CARD 1 -->
+                <Card maxWidth="Infinity">
+                    <body>
+                        <VBox spacing="12" alignment="CENTER">
 
-                    <Label fx:id="adbStatusLabel"
-                           text="ADB not found"/>
+                            <InputGroup alignment="CENTER">
+                                <TextField fx:id="customAdbPathTextField"
+                                           promptText="Android SDK or adb path"/>
 
-                    <Button fx:id="startButton" text="Start"/>
-                </VBox>
-            </body>
-        </Card>
+                                <Button fx:id="setPathButton"
+                                        text="Browse"/>
+                            </InputGroup>
 
-        <Card>
-            <body>
-                <VBox spacing="12" alignment="CENTER">
-                    <Label text="Device not connected"/>
-                </VBox>
-            </body>
-        </Card>
+                            <Label fx:id="adbStatusLabel"
+                                   text="ADB not found"/>
 
+                            <Button fx:id="scanDefaultAdbLocationsButton"
+                                    text="Scan default adb locations"/>
 
-    </VBox>
-</AnchorPane>
+                            <Button fx:id="startButton"
+                                    text="Start"
+                                    disable="true"/>
+
+                        </VBox>
+                    </body>
+                </Card>
+
+                <!-- CARD 2 -->
+                <Card fx:id="devicesCard"
+                      visible="false"
+                      maxWidth="Infinity">
+
+                    <body>
+                        <VBox spacing="10" alignment="CENTER">
+
+                            <Label text="Device not connected"
+                                   style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+
+                            <Label text="To connect your Android device:"/>
+
+                            <VBox spacing="6" alignment="CENTER_LEFT">
+
+                                <Label text="1. Enable Developer Options"/>
+                                <Label text="2. Enable USB Debugging"/>
+                                <Label text="3. Connect via USB cable"/>
+                                <Label text="4. Accept RSA prompt on device"/>
+
+                            </VBox>
+
+                            <Label text="Tip: Run 'adb devices' to verify connection"
+                                   style="-fx-font-size: 11px; -fx-opacity: 0.7;"/>
+
+                        </VBox>
+                    </body>
+                </Card>
+
+            </VBox>
+        </StackPane>
+
+    </center>
+
+</BorderPane>
