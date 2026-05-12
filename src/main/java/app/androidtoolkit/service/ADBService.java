@@ -5,14 +5,14 @@ import app.androidtoolkit.mapper.AndroidDeviceMapper;
 import app.androidtoolkit.model.AndroidDevice;
 import app.androidtoolkit.model.AndroidUser;
 import app.androidtoolkit.model.AppPackage;
-import app.androidtoolkit.utils.ADBLocator;
 import app.androidtoolkit.utils.PackageDetailsParser;
 import com.android.ddmlib.*;
 import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,6 +25,7 @@ import java.util.regex.Pattern;
 public class ADBService {
     private final static ADBService INSTANCE = new ADBService();
     private final AppState appState = AppState.getInstance();
+    private final SimpleBooleanProperty isAdbServiceRunning = new SimpleBooleanProperty(false);
     private IDevice connectedIDevice = null;
     private AndroidDebugBridge bridge;
 
@@ -32,25 +33,28 @@ public class ADBService {
         return INSTANCE;
     }
 
-    public void start() {
-        start(null);
+    public void stop() {
+        if (bridge != null) {
+            log.info("Stopping ADB service");
+            AndroidDebugBridge.terminate();
+            bridge = null;
+            isAdbServiceRunning.set(false);
+        }
     }
 
-    public boolean isAdbServiceRunning() {
-        return bridge.isConnected();
+    public BooleanProperty isAdbServiceRunningProperty() {
+        return isAdbServiceRunning;
     }
 
     public void start(String adbPath) {
 
         try {
-
-//            String resolvedAdbPath = resolveAdbPath(adbPath);
-
             log.info("Starting ADB service using: {}", adbPath);
-
             initializeBridge();
 
             bridge = createBridge(adbPath);
+
+            isAdbServiceRunning.set(true);
 
             registerDeviceListeners(bridge);
 
@@ -61,34 +65,8 @@ public class ADBService {
             log.info("ADB service started successfully");
 
         } catch (Exception e) {
-
             log.error("Failed to start ADB service", e);
-
-//            Platform.runLater(() ->
-//                    appState.showError(
-//                            "Failed to start ADB",
-//                            e.getMessage()
-//                    )
-//            );
         }
-    }
-
-    private String resolveAdbPath(String adbPath) {
-
-        if (adbPath != null && !adbPath.isBlank()) {
-
-            log.debug("Using provided adb path: {}", adbPath);
-
-            return adbPath;
-        }
-
-        log.debug("No adb path provided, searching automatically");
-
-        return ADBLocator.findInDefaultAdbLocations()
-                .map(Path::toString)
-                .orElseThrow(() -> new IllegalStateException(
-                        "ADB not found. Please install Android Platform Tools."
-                ));
     }
 
     private void initializeBridge() {
@@ -110,49 +88,32 @@ public class ADBService {
         );
 
         if (bridge == null) {
-
-            throw new IllegalStateException(
-                    "Failed to create AndroidDebugBridge"
-            );
+            throw new IllegalStateException("Failed to create AndroidDebugBridge");
         }
 
         return bridge;
     }
 
     private void registerDeviceListeners(AndroidDebugBridge bridge) {
-
         AndroidDebugBridge.addDeviceChangeListener(
                 new AndroidDebugBridge.IDeviceChangeListener() {
-
                     @Override
                     public void deviceConnected(IDevice device) {
-
                         log.info("Device connected: {}", device.getSerialNumber());
-
                         refreshDevices(bridge);
                     }
 
                     @Override
                     public void deviceDisconnected(IDevice device) {
-
                         log.info("Device disconnected: {}", device.getSerialNumber());
-
                         connectedIDevice = null;
-
                         Platform.runLater(appState::deviceDisconnected);
-
                         refreshDevices(bridge);
                     }
 
                     @Override
                     public void deviceChanged(IDevice device, int changeMask) {
-
-                        log.debug(
-                                "Device changed: {} mask={}",
-                                device.getSerialNumber(),
-                                changeMask
-                        );
-
+                        log.debug("Device changed: {} mask={}", device.getSerialNumber(), changeMask);
                         refreshDevices(bridge);
                     }
                 }
@@ -160,7 +121,6 @@ public class ADBService {
     }
 
     private void registerPackageSelectionListener() {
-
         appState.getSelectedPackage().addListener((_, _, newValue) -> {
 
             if (newValue == null) {
@@ -168,28 +128,19 @@ public class ADBService {
             }
 
             try {
-
-                log.debug(
-                        "Scanning package info for: {}",
-                        newValue.getPackageName()
-                );
+                log.debug("Scanning package info for: {}", newValue.getPackageName());
 
                 scanPackageInfoAndUpdateModel(newValue);
 
                 log.info(
-                        "Package scan completed: {} permissions",
+                        "Package scan completed: {} installed permissions",
                         newValue.getPackageDetails()
                                 .getInstalledPermissions()
                                 .size()
                 );
 
             } catch (Exception e) {
-
-                log.error(
-                        "Failed to scan package: {}",
-                        newValue.getPackageName(),
-                        e
-                );
+                log.error("Failed to scan package: {}", newValue.getPackageName(), e);
             }
         });
     }
@@ -209,7 +160,7 @@ public class ADBService {
                         newDevice.getUsers().addAll(users);
                         scanAllAppsAsync(users);
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        log.error("Failed to get users for device: {}", d, e);
                     }
                     break;
                 }
@@ -253,7 +204,7 @@ public class ADBService {
 
             Platform.runLater(() -> {
                 appState.getConnectedDevice().get().getPackages().clear();
-                System.out.println("Scanned packages: " + scannedPackages.size());
+                log.debug("Scanned packages: {}", scannedPackages.size());
                 appState.getConnectedDevice().get().getPackages().putAll(scannedPackages);
             });
         });

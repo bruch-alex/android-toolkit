@@ -18,36 +18,6 @@
     </top>
 
     <center>
-        <HBox alignment="CENTER_LEFT"
-              spacing="16"
-              style="-fx-padding: 10 14; "
-              visible="false">
-
-            <HBox spacing="6" alignment="CENTER_LEFT">
-                <Label text="Adb status:"/>
-                <Label fx:id="isAdbInstalledLabel" text="Not found"
-                       style="-fx-font-weight: bold;"/>
-            </HBox>
-
-            <HBox fx:id="deviceModelContainer" visible="false" spacing="6" alignment="CENTER_LEFT">
-                <Label text="Device:"/>
-                <Label fx:id="deviceModelLabel" text="No device connected"
-                       style="-fx-font-weight: bold;"/>
-            </HBox>
-
-            <HBox fx:id="manufacturerContainer" visible="false" spacing="6" alignment="CENTER_LEFT">
-                <Label text="Manufacturer:"/>
-                <Label fx:id="deviceManufacturerLabel" text="device"
-                       style="-fx-font-weight: bold;"/>
-            </HBox>
-
-            <HBox fx:id="androidVersionContainer" spacing="6" visible="false" alignment="CENTER_LEFT">
-                <Label text="Android:"/>
-                <Label fx:id="androidVersionLabel" text="androidVersion"
-                       style="-fx-font-weight: bold;"/>
-            </HBox>
-
-        </HBox>
         <HBox>
             <fx:include source="shared/package-list.fxml"/>
             <Separator orientation="VERTICAL"/>
