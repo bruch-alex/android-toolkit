@@ -111,6 +111,7 @@ jobs:
             --name AndroidToolkit `
             --win-dir-chooser `
             --win-per-user-install `
+            --win-console `
             --win-shortcut `
             --input target `
             --main-jar app.jar `
