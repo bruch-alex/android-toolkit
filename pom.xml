@@ -23,6 +23,8 @@
         <jackson.databind.version>3.1.2</jackson.databind.version>
         <atlantafx.version>2.1.0</atlantafx.version>
         <maven.jar.plugin.version>3.3.0</maven.jar.plugin.version>
+        <sl4j.version>2.0.17</sl4j.version>
+        <logback.version>1.5.18</logback.version>
     </properties>
 
     <repositories>
@@ -87,6 +89,16 @@
             <groupId>io.github.mkpaz</groupId>
             <artifactId>atlantafx-base</artifactId>
             <version>${atlantafx.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${sl4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
         </dependency>
     </dependencies>
 

@@ -9,6 +9,7 @@ import app.androidtoolkit.utils.ADBLocator;
 import app.androidtoolkit.utils.PackageDetailsParser;
 import com.android.ddmlib.*;
 import javafx.application.Platform;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Slf4j
 public class ADBService {
     private final static ADBService INSTANCE = new ADBService();
     private final AppState appState = AppState.getInstance();
@@ -33,22 +35,24 @@ public class ADBService {
     }
 
     public void start(String adbPath) {
-        System.out.println("Starting ADB service...");
+
         if (adbPath == null) {
+            log.debug("Starting ADB service without adb path");
             adbPath = ADBLocator.findAdbPath().orElseThrow(() -> new IllegalStateException("ADB not found. Please install ADB and add it to your PATH.")).toString();
         }
+        log.debug("Starting ADB service with adb path {}", adbPath);
         AndroidDebugBridge.init(false);
         AndroidDebugBridge bridge = AndroidDebugBridge.createBridge(adbPath, false, 5000, TimeUnit.MILLISECONDS);
         AndroidDebugBridge.addDeviceChangeListener(new AndroidDebugBridge.IDeviceChangeListener() {
             @Override
             public void deviceConnected(IDevice device) {
-                System.out.println("Device connected: " + device);
+                log.debug("Device connected: {}", device);
                 refreshDevices(bridge);
             }
 
             @Override
             public void deviceDisconnected(IDevice device) {
-                System.out.println("Device disconnected: " + device);
+                log.debug("Device disconnected: {}", device);
                 connectedIDevice = null;
                 Platform.runLater(appState::deviceDisconnected);
                 refreshDevices(bridge);
@@ -56,6 +60,7 @@ public class ADBService {
 
             @Override
             public void deviceChanged(IDevice device, int changeMask) {
+                log.debug("Device changed: {}", device);
                 refreshDevices(bridge);
             }
         });
@@ -77,8 +82,11 @@ public class ADBService {
     private void refreshDevices(AndroidDebugBridge bridge) {
         AndroidDevice newDevice = null;
         if (bridge != null) {
+            log.debug("ADB Bridge initialized");
             for (IDevice d : bridge.getDevices()) {
+                log.debug("Checking device: {}", d);
                 if (d != null && d.isOnline()) {
+                    log.debug("Configuring new device: {}", d);
                     connectedIDevice = d;
                     newDevice = AndroidDeviceMapper.toModel(d);
                     try {
@@ -93,6 +101,7 @@ public class ADBService {
             }
         }
         var finalDevice = newDevice;
+        log.debug("Configured device: {}", finalDevice);
         Platform.runLater(() -> appState.getConnectedDevice().set(finalDevice == null ? null : AndroidDeviceMapper.toView(finalDevice)));
     }
 
