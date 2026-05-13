@@ -91,10 +91,12 @@ public class PackageInfoController {
     private boolean showConfirmationDialog(String title, String headerText, boolean permanent) {
         var alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle(title);
-        alert.setHeaderText(headerText);
+        alert.setHeaderText(null);
+
         if (permanent) {
-            alert.setContentText("This action cannot be undone.");
+            headerText += "\nThis action cannot be undone.";
         }
+        alert.setContentText(headerText);
         return alert.showAndWait()
                 .filter(response -> response == ButtonType.OK)
                 .isPresent();
