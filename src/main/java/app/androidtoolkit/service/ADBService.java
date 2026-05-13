@@ -8,93 +8,139 @@ import app.androidtoolkit.model.AppPackage;
 import app.androidtoolkit.utils.PackageDetailsParser;
 import com.android.ddmlib.*;
 import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
+@Slf4j
 public class ADBService {
     private final static ADBService INSTANCE = new ADBService();
     private final AppState appState = AppState.getInstance();
+    private final SimpleBooleanProperty isAdbServiceRunning = new SimpleBooleanProperty(false);
     private IDevice connectedIDevice = null;
+    private AndroidDebugBridge bridge;
 
     public static ADBService getInstance() {
         return INSTANCE;
     }
 
-    public static Optional<String> findAdbPath() {
-        List<Path> paths = Stream.of(
-                envPath("ANDROID_SDK_ROOT"),
-                envPath("ANDROID_HOME"),
-                Path.of(System.getProperty("user.home"), "Android", "Sdk"),
-                Path.of(System.getProperty("user.home"), "android-sdk"),
-                Path.of("/usr/lib/android-sdk"),
-                Path.of(System.getProperty("user.home"),"platform-tools")
-        ).filter(Objects::nonNull).toList();
-
-        for (Path sdkRoot : paths) {
-            Path adb = sdkRoot.resolve("platform-tools").resolve(isWindows() ? "adb.exe" : "adb");
-            if (Files.isRegularFile(adb) && Files.isExecutable(adb)) {
-                return Optional.of(adb.toString());
-            }
+    public void stop() {
+        if (bridge != null) {
+            log.info("Stopping ADB service");
+            AndroidDebugBridge.terminate();
+            bridge = null;
+            isAdbServiceRunning.set(false);
         }
-        return Optional.empty();
     }
 
-    private static boolean isWindows() {
-        return System.getProperty("os.name").toLowerCase().contains("win");
+    public BooleanProperty isAdbServiceRunningProperty() {
+        return isAdbServiceRunning;
     }
 
-    private static Path envPath(String name) {
-        var value = System.getenv(name);
-        return (value == null || value.isBlank()) ? null : Path.of(value);
+    public void start(String adbPath) {
+
+        try {
+            log.info("Starting ADB service using: {}", adbPath);
+            initializeBridge();
+
+            bridge = createBridge(adbPath);
+
+            isAdbServiceRunning.set(true);
+
+            registerDeviceListeners(bridge);
+
+            refreshDevices(bridge);
+
+            registerPackageSelectionListener();
+
+            log.info("ADB service started successfully");
+
+        } catch (Exception e) {
+            log.error("Failed to start ADB service", e);
+        }
     }
 
-    public boolean isAdbInstalled() {
-        return findAdbPath().isPresent();
+    private void initializeBridge() {
+        if (AndroidDebugBridge.getBridge() == null) {
+            log.debug("Initializing AndroidDebugBridge");
+            AndroidDebugBridge.init(false);
+        }
     }
 
-    public void start() {
-        System.out.println("Starting ADB service...");
-        var adbPath = findAdbPath().orElse("");
-        AndroidDebugBridge.init(false);
-        AndroidDebugBridge bridge = AndroidDebugBridge.createBridge(adbPath, false, 5000, TimeUnit.MILLISECONDS);
-        AndroidDebugBridge.addDeviceChangeListener(new AndroidDebugBridge.IDeviceChangeListener() {
-            @Override
-            public void deviceConnected(IDevice device) {
-                System.out.println("Device connected: " + device);
-                refreshDevices(bridge);
-            }
+    private AndroidDebugBridge createBridge(String adbPath) {
 
-            @Override
-            public void deviceDisconnected(IDevice device) {
-                System.out.println("Device disconnected: " + device);
-                connectedIDevice = null;
-                Platform.runLater(appState::deviceDisconnected);
-                refreshDevices(bridge);
-            }
+        log.debug("Creating AndroidDebugBridge");
 
-            @Override
-            public void deviceChanged(IDevice device, int changeMask) {
-                refreshDevices(bridge);
-            }
-        });
-        refreshDevices(bridge);
+        AndroidDebugBridge bridge = AndroidDebugBridge.createBridge(
+                adbPath,
+                false,
+                5000,
+                TimeUnit.MILLISECONDS
+        );
 
-        appState.getSelectedPackage().addListener((_, _, newValue) -> {
-            if (newValue != null) {
-                try {
-                    System.out.println("Scanning package info for: " + newValue.getPackageName());
-                    scanPackageInfoAndUpdateModel(newValue);
-                    System.out.println("Package info scanned: " + newValue.getPackageDetails().getInstalledPermissions().size());
-                } catch (Exception e) {
-                    e.printStackTrace();
+        if (bridge == null) {
+            throw new IllegalStateException("Failed to create AndroidDebugBridge");
+        }
+
+        return bridge;
+    }
+
+    private void registerDeviceListeners(AndroidDebugBridge bridge) {
+        AndroidDebugBridge.addDeviceChangeListener(
+                new AndroidDebugBridge.IDeviceChangeListener() {
+                    @Override
+                    public void deviceConnected(IDevice device) {
+                        log.info("Device connected: {}", device.getSerialNumber());
+                        refreshDevices(bridge);
+                    }
+
+                    @Override
+                    public void deviceDisconnected(IDevice device) {
+                        log.info("Device disconnected: {}", device.getSerialNumber());
+                        connectedIDevice = null;
+                        Platform.runLater(appState::deviceDisconnected);
+                        refreshDevices(bridge);
+                    }
+
+                    @Override
+                    public void deviceChanged(IDevice device, int changeMask) {
+                        log.debug("Device changed: {} mask={}", device.getSerialNumber(), changeMask);
+                        refreshDevices(bridge);
+                    }
                 }
+        );
+    }
+
+    private void registerPackageSelectionListener() {
+        appState.getSelectedPackage().addListener((_, _, newValue) -> {
+
+            if (newValue == null) {
+                return;
+            }
+
+            try {
+                log.debug("Scanning package info for: {}", newValue.getPackageName());
+
+                scanPackageInfoAndUpdateModel(newValue);
+
+                log.info(
+                        "Package scan completed: {} installed permissions",
+                        newValue.getPackageDetails()
+                                .getInstalledPermissions()
+                                .size()
+                );
+
+            } catch (Exception e) {
+                log.error("Failed to scan package: {}", newValue.getPackageName(), e);
             }
         });
     }
@@ -102,8 +148,11 @@ public class ADBService {
     private void refreshDevices(AndroidDebugBridge bridge) {
         AndroidDevice newDevice = null;
         if (bridge != null) {
+            log.debug("ADB Bridge initialized");
             for (IDevice d : bridge.getDevices()) {
+                log.debug("Checking device: {}", d);
                 if (d != null && d.isOnline()) {
+                    log.debug("Configuring new device: {}", d);
                     connectedIDevice = d;
                     newDevice = AndroidDeviceMapper.toModel(d);
                     try {
@@ -111,13 +160,14 @@ public class ADBService {
                         newDevice.getUsers().addAll(users);
                         scanAllAppsAsync(users);
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        log.error("Failed to get users for device: {}", d, e);
                     }
                     break;
                 }
             }
         }
         var finalDevice = newDevice;
+        log.debug("Configured device: {}", finalDevice);
         Platform.runLater(() -> appState.getConnectedDevice().set(finalDevice == null ? null : AndroidDeviceMapper.toView(finalDevice)));
     }
 
@@ -154,7 +204,7 @@ public class ADBService {
 
             Platform.runLater(() -> {
                 appState.getConnectedDevice().get().getPackages().clear();
-                System.out.println("Scanned packages: " + scannedPackages.size());
+                log.debug("Scanned packages: {}", scannedPackages.size());
                 appState.getConnectedDevice().get().getPackages().putAll(scannedPackages);
             });
         });
@@ -266,6 +316,7 @@ public class ADBService {
         String command = "pm revoke " + packageName +
                 " " + permissionFullName +
                 " --user " + uid;
+        log.debug("Running adb command {}", command);
         connectedIDevice.executeShellCommand(command, new MultiLineReceiver() {
             @Override
             public boolean isCancelled() {
@@ -285,6 +336,7 @@ public class ADBService {
         String command = "pm grant " + packageName +
                 " " + permissionFullName +
                 " --user " + uid;
+        log.debug("Running adb command {}", command);
         connectedIDevice.executeShellCommand(command, new MultiLineReceiver() {
             @Override
             public boolean isCancelled() {
@@ -301,8 +353,8 @@ public class ADBService {
     }
 
     public void setEnabledToDisabled(String packageName, String uid) throws ShellCommandUnresponsiveException, AdbCommandRejectedException, IOException, TimeoutException {
-        String command = "pm disable-user " + packageName +
-                " --user " + uid;
+        String command = "pm disable-user " + packageName + " --user " + uid;
+        log.debug("Running adb command {}", command);
         connectedIDevice.executeShellCommand(command, new MultiLineReceiver() {
             @Override
             public void processNewLines(String[] lines) {
@@ -319,13 +371,13 @@ public class ADBService {
     }
 
     public void setEnabledToDefaultState(String packageName, String uid) throws ShellCommandUnresponsiveException, AdbCommandRejectedException, IOException, TimeoutException {
-        String command = "pm default-state " + packageName +
-                " --user " + uid;
+        String command = "pm default-state " + packageName + " --user " + uid;
+        log.debug("Running adb command {}", command);
         connectedIDevice.executeShellCommand(command, new MultiLineReceiver() {
             @Override
             public void processNewLines(String[] lines) {
                 for (String line : lines) {
-                    System.out.println(line);
+                    log.debug(line);
                 }
             }
 
@@ -338,6 +390,7 @@ public class ADBService {
 
     public void deleteAppForUser(String packageName, String uid) throws ShellCommandUnresponsiveException, AdbCommandRejectedException, IOException, TimeoutException {
         String command = "pm uninstall " + "--user " + uid + " " + packageName;
+        log.debug("Running adb command {}", command);
         connectedIDevice.executeShellCommand(command, new MultiLineReceiver() {
             @Override
             public void processNewLines(String[] lines) {

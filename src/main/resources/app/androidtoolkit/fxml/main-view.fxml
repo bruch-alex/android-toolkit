@@ -1,40 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="app.androidtoolkit.controller.MainController">
 
     <top>
-        <HBox alignment="CENTER_LEFT"
-              spacing="16"
-              style="-fx-padding: 10 14; ">
-
-            <HBox spacing="6" alignment="CENTER_LEFT">
-                <Label text="Adb status:"/>
-                <Label fx:id="isAdbInstalledLabel" text="Not found"
-                       style="-fx-font-weight: bold;"/>
-            </HBox>
-
-            <HBox fx:id="deviceModelContainer" visible="false" spacing="6" alignment="CENTER_LEFT">
-                <Label text="Device:"/>
-                <Label fx:id="deviceModelLabel" text="No device connected"
-                       style="-fx-font-weight: bold;"/>
-            </HBox>
-
-            <HBox fx:id="manufacturerContainer" visible="false" spacing="6" alignment="CENTER_LEFT">
-                <Label text="Manufacturer:"/>
-                <Label fx:id="deviceManufacturerLabel" text="device"
-                       style="-fx-font-weight: bold;"/>
-            </HBox>
-
-            <HBox fx:id="androidVersionContainer" spacing="6" visible="false" alignment="CENTER_LEFT">
-                <Label text="Android:"/>
-                <Label fx:id="androidVersionLabel" text="androidVersion"
-                       style="-fx-font-weight: bold;"/>
-            </HBox>
-
-        </HBox>
+        <MenuBar>
+            <Menu text="File">
+                <MenuItem text="Settings"/>
+            </Menu>
+            <Menu text="Help">
+                <MenuItem text="About"/>
+                <MenuItem text="Source Code" onAction="#openSourceCode"/>
+            </Menu>
+        </MenuBar>
     </top>
 
     <center>
@@ -43,7 +24,7 @@
             <Separator orientation="VERTICAL"/>
             <TabPane tabClosingPolicy="UNAVAILABLE" HBox.hgrow="ALWAYS">
                 <Tab text="Package info">
-                    <fx:include source="package-info/main.fxml" fx:id="packageInfo"/>
+                    <fx:include source="package-info/main.fxml"/>
                 </Tab>
                 <Tab text="App Permissions">
                     <fx:include source="permissions-view/main-view.fxml"/>

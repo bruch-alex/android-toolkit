@@ -1,41 +1,26 @@
 package app.androidtoolkit.controller;
 
-import app.androidtoolkit.AppState;
-import app.androidtoolkit.service.ADBService;
-import javafx.beans.binding.Bindings;
-import javafx.scene.control.Label;
-import javafx.scene.layout.HBox;
+import javafx.event.ActionEvent;
+import lombok.extern.slf4j.Slf4j;
 
+import java.awt.*;
+import java.net.URI;
+
+@Slf4j
 public class MainController {
-    private final ADBService adb = ADBService.getInstance();
-    private final AppState appState = AppState.getInstance();
-
-    public Label deviceModelLabel;
-    public Label androidVersionLabel;
-    public Label deviceManufacturerLabel;
-    public Label isAdbInstalledLabel;
-    public HBox androidVersionContainer;
-    public HBox manufacturerContainer;
-    public HBox deviceModelContainer;
-
-    public void initialize() {
-        System.out.println("MAIN CONTROLLER: DEVICE INSTANCE: " + adb);
-        isAdbInstalledLabel.setText(adb.isAdbInstalled() ? "Installed" : "Not found");
-        deviceModelLabel.textProperty().bind(Bindings.selectString(appState.getConnectedDevice(), "model"));
-        androidVersionLabel.textProperty().bind(Bindings.selectString(appState.getConnectedDevice(), "androidVersion"));
-        deviceManufacturerLabel.textProperty().bind(Bindings.selectString(appState.getConnectedDevice(), "manufacturer"));
-
-        appState.getConnectedDevice().addListener((_, _, newValue) -> {
-            if (newValue != null) {
-                deviceModelContainer.setVisible(true);
-                androidVersionContainer.setVisible(true);
-                manufacturerContainer.setVisible(true);
-            } else {
-                deviceModelContainer.setVisible(false);
-                androidVersionContainer.setVisible(false);
-                manufacturerContainer.setVisible(false);
+    public void openSourceCode(ActionEvent actionEvent) {
+        Thread thread = new Thread(() -> {
+            try {
+                Desktop.getDesktop().browse(
+                        new URI("https://github.com/bruch-alex/android-toolkit")
+                );
+            } catch (Exception e) {
+                log.error("Failed to open source code", e);
             }
         });
+        thread.setDaemon(true);
+        thread.setName("browser-opener");
+        thread.start();
     }
 }
 

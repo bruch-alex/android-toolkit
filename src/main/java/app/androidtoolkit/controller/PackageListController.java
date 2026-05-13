@@ -12,11 +12,25 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.util.Duration;
+import lombok.extern.slf4j.Slf4j;
+import org.controlsfx.glyphfont.FontAwesome;
+import org.kordamp.ikonli.Ikon;
+import org.kordamp.ikonli.Ikonli;
+import org.kordamp.ikonli.fontawesome6.FontAwesomeRegularIkonHandler;
+import org.kordamp.ikonli.fontawesome6.FontAwesomeRegularIkonProvider;
+import org.kordamp.ikonli.fontawesome6.FontAwesomeSolid;
+import org.kordamp.ikonli.javafx.FontIcon;
 
+import javax.swing.*;
 import java.util.Comparator;
-import java.util.List;
 
+import static javafx.scene.input.KeyCombination.CONTROL_DOWN;
+
+@Slf4j
 public class PackageListController {
     private final AppState appState = AppState.getInstance();
     private final ObservableList<AppPackage> userPackages = FXCollections.observableArrayList();
@@ -54,8 +68,12 @@ public class PackageListController {
     }
 
     private void onDeviceConnect(DeviceView device) {
-        selectedUserBox.getItems().setAll(device != null ? device.getUsers() : List.of());
+        assert device != null;
+
+        selectedUserBox.getItems().setAll(device.getUsers());
+        log.debug("Users: {}", selectedUserBox.getItems());
         selectedUserBox.getSelectionModel().selectFirst();
+        log.debug("Selected user: {}", selectedUserBox.getSelectionModel().getSelectedItem());
 
         filteredApps = new FilteredList<>(userPackages, _ -> true);
         SortedList<AppPackage> sortedApps = new SortedList<>(filteredApps);
@@ -69,7 +87,10 @@ public class PackageListController {
         ));
 
         packageList.setItems(sortedApps);
-        device.getPackages().addListener((MapChangeListener<String, AppPackage>) _ -> refreshUserPackages(device));
+
+
+        observePackages(device);
+
         selectedUserBox.setOnAction(_ -> refreshUserPackages(device));
 
         searchField.textProperty().addListener((_, _, _) -> applyFilters());
@@ -87,8 +108,17 @@ public class PackageListController {
         });
     }
 
+    private void observePackages(DeviceView device) {
+        PauseTransition debounce = new PauseTransition(Duration.millis(100));
+        debounce.setOnFinished(_ -> refreshUserPackages(device));
+
+        device.getPackages().addListener((MapChangeListener<String, AppPackage>) _ -> {
+            debounce.playFromStart();
+        });
+    }
+
     private void setupUI() {
-        packageList.setCellFactory(listView -> new ListCell<>() {
+        packageList.setCellFactory(_ -> new ListCell<>() {
             @Override
             protected void updateItem(AppPackage item, boolean empty) {
                 super.updateItem(item, empty);
@@ -97,10 +127,11 @@ public class PackageListController {
                     setText(null);
                 } else {
                     setText(item.getPackageName());
+                    setContextMenu(createContextMenuForPackage());
                 }
             }
         });
-        selectedUserBox.setCellFactory(param -> new ListCell<>() {
+        selectedUserBox.setCellFactory(_ -> new ListCell<>() {
             @Override
             protected void updateItem(AndroidUser user, boolean empty) {
                 super.updateItem(user, empty);
@@ -134,11 +165,11 @@ public class PackageListController {
             userPackages.clear();
             return;
         }
-        userPackages.setAll(
-                device.getPackages().values().stream()
-                        .filter(pkg -> pkg.getInstanceDetailsMap().containsKey(selectedUser.id()))
-                        .toList()
-        );
+        var devicePackages = device.getPackages().values().stream()
+                .filter(pkg -> pkg.getInstanceDetailsMap().containsKey(selectedUser.id()))
+                .toList();
+        log.debug("User packages size: {}", devicePackages.size());
+        userPackages.setAll(devicePackages);
         totalInstalledAppsLabel.setText(String.valueOf(device.getPackages().size()));
         applyFilters();
     }
@@ -160,5 +191,30 @@ public class PackageListController {
             var matchesDisabledFilter = !hideDisabledAppsCheckBox.isSelected() || app.getInstanceDetailsMap().get(appState.getSelectedUser().get().id()).isEnabled();
             return matchesSearch && matchesSystemFilter && matchesDisabledFilter;
         });
+    }
+
+    private ContextMenu createContextMenuForPackage() {
+        var contextMenu = new ContextMenu();
+        contextMenu.getItems().addAll(
+                createItem("Copy package name", FontAwesomeSolid.COPY, new KeyCodeCombination(KeyCode.C, CONTROL_DOWN)),
+                createItem("Delete package", FontAwesomeSolid.TRASH, new KeyCodeCombination(KeyCode.X, CONTROL_DOWN)),
+                createItem("Disable package", FontAwesomeSolid.STOP, null),
+                createItem("Share package details", FontAwesomeSolid.SHARE, null),
+                createItem("Export details to pdf", FontAwesomeSolid.FILE_PDF, null)
+        );
+        return contextMenu;
+    }
+
+
+    private MenuItem createItem(String text, Ikon graphic, KeyCombination accelerator) {
+        var item = new MenuItem(text);
+        if (graphic != null) {
+            item.setGraphic(new FontIcon(graphic));
+        }
+
+        if (accelerator != null) {
+            item.setAccelerator(accelerator);
+        }
+        return item;
     }
 }
