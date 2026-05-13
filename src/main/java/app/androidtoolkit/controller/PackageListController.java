@@ -12,10 +12,23 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.util.Duration;
 import lombok.extern.slf4j.Slf4j;
+import org.controlsfx.glyphfont.FontAwesome;
+import org.kordamp.ikonli.Ikon;
+import org.kordamp.ikonli.Ikonli;
+import org.kordamp.ikonli.fontawesome6.FontAwesomeRegularIkonHandler;
+import org.kordamp.ikonli.fontawesome6.FontAwesomeRegularIkonProvider;
+import org.kordamp.ikonli.fontawesome6.FontAwesomeSolid;
+import org.kordamp.ikonli.javafx.FontIcon;
 
+import javax.swing.*;
 import java.util.Comparator;
+
+import static javafx.scene.input.KeyCombination.CONTROL_DOWN;
 
 @Slf4j
 public class PackageListController {
@@ -114,6 +127,7 @@ public class PackageListController {
                     setText(null);
                 } else {
                     setText(item.getPackageName());
+                    setContextMenu(createContextMenuForPackage());
                 }
             }
         });
@@ -177,5 +191,30 @@ public class PackageListController {
             var matchesDisabledFilter = !hideDisabledAppsCheckBox.isSelected() || app.getInstanceDetailsMap().get(appState.getSelectedUser().get().id()).isEnabled();
             return matchesSearch && matchesSystemFilter && matchesDisabledFilter;
         });
+    }
+
+    private ContextMenu createContextMenuForPackage() {
+        var contextMenu = new ContextMenu();
+        contextMenu.getItems().addAll(
+                createItem("Copy package name", FontAwesomeSolid.COPY, new KeyCodeCombination(KeyCode.C, CONTROL_DOWN)),
+                createItem("Delete package", FontAwesomeSolid.TRASH, new KeyCodeCombination(KeyCode.X, CONTROL_DOWN)),
+                createItem("Disable package", FontAwesomeSolid.STOP, null),
+                createItem("Share package details", FontAwesomeSolid.SHARE, null),
+                createItem("Export details to pdf", FontAwesomeSolid.FILE_PDF, null)
+        );
+        return contextMenu;
+    }
+
+
+    private MenuItem createItem(String text, Ikon graphic, KeyCombination accelerator) {
+        var item = new MenuItem(text);
+        if (graphic != null) {
+            item.setGraphic(new FontIcon(graphic));
+        }
+
+        if (accelerator != null) {
+            item.setAccelerator(accelerator);
+        }
+        return item;
     }
 }

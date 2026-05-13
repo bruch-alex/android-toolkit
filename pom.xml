@@ -25,6 +25,7 @@
         <maven.jar.plugin.version>3.3.0</maven.jar.plugin.version>
         <sl4j.version>2.0.17</sl4j.version>
         <logback.version>1.5.18</logback.version>
+        <ikonli.version>12.4.0</ikonli.version>
     </properties>
 
     <repositories>
@@ -99,6 +100,16 @@
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>${logback.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kordamp.ikonli</groupId>
+            <artifactId>ikonli-javafx</artifactId>
+            <version>${ikonli.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kordamp.ikonli</groupId>
+            <artifactId>ikonli-fontawesome6-pack</artifactId>
+            <version>${ikonli.version}</version>
         </dependency>
     </dependencies>
 
