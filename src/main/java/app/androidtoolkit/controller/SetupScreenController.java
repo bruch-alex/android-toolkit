@@ -39,7 +39,7 @@ public class SetupScreenController {
     public Button scanDefaultAdbLocationsButton;
     public Card devicesCard;
     public InputGroup pathGroup;
-    public Card windowsTippCard;
+    public Card windowsTipCard;
     private ScheduledExecutorService adbScheduler;
     private ChangeListener<Boolean> adbServiceListener;
     private ScheduledFuture<?> adbPollTask;
@@ -126,7 +126,7 @@ public class SetupScreenController {
             return t;
         });
 
-        windowsTippCard.setVisible(ADBLocator.isWindows());
+        windowsTipCard.setVisible(ADBLocator.isWindows());
     }
 
     private void updateAdbButton(boolean isRunning) {

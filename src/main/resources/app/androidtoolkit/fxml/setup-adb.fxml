@@ -20,7 +20,7 @@
                   prefWidth="700">
 
                 <!--Show only on Windows-->
-                <Card maxWidth="Infinity" fx:id="windowsTippCard">
+                <Card maxWidth="Infinity" fx:id="windowsTipCard">
                     <body>
                         <VBox spacing="12" alignment="CENTER">
                             <Label text="On Windows, the ADB service may need to be started manually."/>
