@@ -31,12 +31,6 @@ public class SetupScreenController {
     private static final int ADB_MAX_CONNECT_ATTEMPTS = 10;
     private final AppState appState = AppState.getInstance();
     private final ADBService adb = ADBService.getInstance();
-    private final ScheduledExecutorService adbScheduler =
-            Executors.newSingleThreadScheduledExecutor(r -> {
-                Thread t = new Thread(r, "adb-status-poller");
-                t.setDaemon(true);
-                return t;
-            });
     public BorderPane rootPane;
     public Label adbStatusLabel;
     public TextField customAdbPathTextField;
@@ -45,6 +39,8 @@ public class SetupScreenController {
     public Button scanDefaultAdbLocationsButton;
     public Card devicesCard;
     public InputGroup pathGroup;
+    public Card windowsTippCard;
+    private ScheduledExecutorService adbScheduler;
     private ChangeListener<Boolean> adbServiceListener;
     private ScheduledFuture<?> adbPollTask;
 
@@ -123,6 +119,14 @@ public class SetupScreenController {
                 startButton.setDisable(true);
             }
         });
+
+        adbScheduler = Executors.newSingleThreadScheduledExecutor(r -> {
+            Thread t = new Thread(r, "adb-status-poller");
+            t.setDaemon(true);
+            return t;
+        });
+
+        windowsTippCard.setVisible(ADBLocator.isWindows());
     }
 
     private void updateAdbButton(boolean isRunning) {

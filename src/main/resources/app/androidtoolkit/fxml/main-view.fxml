@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="app.androidtoolkit.controller.MainController">
 
@@ -23,7 +24,7 @@
             <Separator orientation="VERTICAL"/>
             <TabPane tabClosingPolicy="UNAVAILABLE" HBox.hgrow="ALWAYS">
                 <Tab text="Package info">
-                    <fx:include source="package-info/main.fxml" fx:id="packageInfo"/>
+                    <fx:include source="package-info/main.fxml"/>
                 </Tab>
                 <Tab text="App Permissions">
                     <fx:include source="permissions-view/main-view.fxml"/>

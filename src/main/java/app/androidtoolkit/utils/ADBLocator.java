@@ -187,8 +187,7 @@ public final class ADBLocator {
         }
     }
 
-    private static boolean isWindows() {
-
+    public static boolean isWindows() {
         return System.getProperty("os.name").toLowerCase(Locale.ROOT).contains("win");
     }
 }
