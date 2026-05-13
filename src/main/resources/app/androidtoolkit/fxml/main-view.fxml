@@ -12,7 +12,7 @@
             </Menu>
             <Menu text="Help">
                 <MenuItem text="About"/>
-                <MenuItem text="Source Code"/>
+                <MenuItem text="Source Code" onAction="#openSourceCode"/>
             </Menu>
         </MenuBar>
     </top>
