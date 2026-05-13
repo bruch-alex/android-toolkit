@@ -1,13 +1,14 @@
 package app.androidtoolkit.controller;
 
 import app.androidtoolkit.AppState;
+import app.androidtoolkit.model.AppPackage;
 import app.androidtoolkit.service.ADBService;
 import javafx.collections.FXCollections;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
+import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class PackageInfoController {
     private final AppState appState = AppState.getInstance();
     private final ADBService adb = ADBService.getInstance();
@@ -28,10 +29,6 @@ public class PackageInfoController {
                 appState.getSelectedPackage().addListener((_, _, newPackage) -> {
                     if (newPackage == null) {
                         container.setVisible(false);
-//                        packageNameLabel.setText("No package selected");
-//                        appIdLabel.setText("");
-//                        versionNameLabel.setText("");
-//                        totalQueriedPackagesLabel.setText("");
                         queriedPackagesListView.setItems(FXCollections.observableArrayList());
                         return;
                     }
@@ -46,37 +43,65 @@ public class PackageInfoController {
                             FXCollections.observableArrayList(newPackage.getPackageDetails().getQueriesPackages()));
                     toggleEnabledStatusButton.setText(enabled ? "Disable" : "Enable");
 
-                    toggleEnabledStatusButton.setOnAction(_ -> {
-                        var uid = appState.getSelectedUser().get().id();
-                        var packageName = newPackage.getPackageName();
-                        if (enabled) {
-                            try {
-                                adb.setEnabledToDisabled(packageName, uid);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        } else {
-                            try {
-                                adb.setEnabledToDefaultState(packageName, uid);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        appState.forceUpdateSelectedPackage();
-                    });
+                    toggleEnabledStatusButton.setOnAction(_ -> toggleEnabledStatus(newPackage, enabled));
+                    deletePackageButton.setOnAction(_ -> deletePackage(newPackage));
 
-                    deletePackageButton.setOnAction(_ -> {
-                        var uid = appState.getSelectedUser().get().id();
-                        var packageName = newPackage.getPackageName();
-                        try {
-                            adb.deleteAppForUser(packageName, uid);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    });
                     container.setVisible(true);
                 });
             }
         });
     }
+
+    private void toggleEnabledStatus(AppPackage newPackage, boolean enabled) {
+        var uid = appState.getSelectedUser().get().id();
+        var packageName = newPackage.getPackageName();
+        if (enabled) {
+            try {
+                if (showConfirmationDialog("Disable Package", "Are you sure you want to disable this package?")) {
+                    adb.setEnabledToDisabled(packageName, uid);
+                }
+
+            } catch (Exception e) {
+                log.error("Failed to disable package: {}", packageName, e);
+            }
+        } else {
+            try {
+                if (showConfirmationDialog("Enable Package", "Are you sure you want to enable this package?")) {
+                    adb.setEnabledToDefaultState(packageName, uid);
+                }
+            } catch (Exception e) {
+                log.error("Failed to enable package: {}", packageName, e);
+            }
+        }
+        appState.forceUpdateSelectedPackage();
+    }
+
+    private void deletePackage(AppPackage newPackage) {
+        var uid = appState.getSelectedUser().get().id();
+        var packageName = newPackage.getPackageName();
+        try {
+            if (showConfirmationDialog("Delete Package", "Are you sure you want to delete this package?", true)) {
+                adb.deleteAppForUser(packageName, uid);
+            }
+        } catch (Exception e) {
+            log.error("Failed to delete package: {}", packageName, e);
+        }
+    }
+
+    private boolean showConfirmationDialog(String title, String headerText, boolean permanent) {
+        var alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(headerText);
+        if (permanent) {
+            alert.setContentText("This action cannot be undone.");
+        }
+        return alert.showAndWait()
+                .filter(response -> response == ButtonType.OK)
+                .isPresent();
+    }
+
+    private boolean showConfirmationDialog(String title, String headerText) {
+        return showConfirmationDialog(title, headerText, false);
+    }
 }
+

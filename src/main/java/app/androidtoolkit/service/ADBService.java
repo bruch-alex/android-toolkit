@@ -316,6 +316,7 @@ public class ADBService {
         String command = "pm revoke " + packageName +
                 " " + permissionFullName +
                 " --user " + uid;
+        log.debug("Running adb command {}", command);
         connectedIDevice.executeShellCommand(command, new MultiLineReceiver() {
             @Override
             public boolean isCancelled() {
@@ -335,6 +336,7 @@ public class ADBService {
         String command = "pm grant " + packageName +
                 " " + permissionFullName +
                 " --user " + uid;
+        log.debug("Running adb command {}", command);
         connectedIDevice.executeShellCommand(command, new MultiLineReceiver() {
             @Override
             public boolean isCancelled() {
@@ -351,8 +353,8 @@ public class ADBService {
     }
 
     public void setEnabledToDisabled(String packageName, String uid) throws ShellCommandUnresponsiveException, AdbCommandRejectedException, IOException, TimeoutException {
-        String command = "pm disable-user " + packageName +
-                " --user " + uid;
+        String command = "pm disable-user " + packageName + " --user " + uid;
+        log.debug("Running adb command {}", command);
         connectedIDevice.executeShellCommand(command, new MultiLineReceiver() {
             @Override
             public void processNewLines(String[] lines) {
@@ -369,13 +371,13 @@ public class ADBService {
     }
 
     public void setEnabledToDefaultState(String packageName, String uid) throws ShellCommandUnresponsiveException, AdbCommandRejectedException, IOException, TimeoutException {
-        String command = "pm default-state " + packageName +
-                " --user " + uid;
+        String command = "pm default-state " + packageName + " --user " + uid;
+        log.debug("Running adb command {}", command);
         connectedIDevice.executeShellCommand(command, new MultiLineReceiver() {
             @Override
             public void processNewLines(String[] lines) {
                 for (String line : lines) {
-                    System.out.println(line);
+                    log.debug(line);
                 }
             }
 
@@ -388,6 +390,7 @@ public class ADBService {
 
     public void deleteAppForUser(String packageName, String uid) throws ShellCommandUnresponsiveException, AdbCommandRejectedException, IOException, TimeoutException {
         String command = "pm uninstall " + "--user " + uid + " " + packageName;
+        log.debug("Running adb command {}", command);
         connectedIDevice.executeShellCommand(command, new MultiLineReceiver() {
             @Override
             public void processNewLines(String[] lines) {
