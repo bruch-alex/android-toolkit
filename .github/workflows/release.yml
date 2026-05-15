@@ -1,89 +1,48 @@
 name: Release
-
 on:
+  push:
+    tags: [ "v*" ]
   workflow_dispatch:
 
 jobs:
 
-#  build-linux:
-#    runs-on: ubuntu-latest
-#    outputs:
-#      artifact-path: ${{ steps.build-linux.outputs.artifact-path }}
-#
-#    steps:
-#      - uses: actions/checkout@v5
-#
-#      - uses: actions/setup-java@v5
-#        with:
-#          distribution: liberica
-#          java-version: 25
-#          java-package: 'jdk+fx'
-#
-#      - name: Build
-#        run: mvn clean package
-#
-#      - name: Create custom runtime (jlink)
-#        run: |
-#          jlink \
-#            --add-modules \
-#              java.base,java.desktop,java.logging,java.scripting,javafx.controls,javafx.fxml \
-#            --output custom-runtime \
-#            --strip-debug \
-#            --compress=2 \
-#            --no-header-files \
-#            --no-man-pages
-#
-#      - name: Prepare AppDir
-#        run: |
-#          mkdir -p AppDir/lib
-#          cp target/*.jar AppDir/
-#          mv AppDir/*.jar AppDir/android-toolkit.jar
-#
-#          cp -r target/lib/* AppDir/lib/
-#          cp -r custom-runtime/. AppDir/jre/
-#
-#          cat > AppDir/AppRun << 'EOF'
-#          #!/bin/bash
-#          DIR="$(dirname "$(readlink -f "$0")")"
-#          JAR=$(ls "$DIR"/*.jar | head -n 1)
-#
-#          exec "$DIR/jre/bin/java" \
-#            --enable-native-access=ALL-UNNAMED \
-#            -cp "$JAR:$DIR/lib/*" \
-#            app.androidtoolkit.Launcher
-#          EOF
-#
-#          chmod +x AppDir/AppRun
-#
-#          cat > AppDir/android-toolkit.desktop << 'EOF'
-#          [Desktop Entry]
-#          Name=Android Toolkit
-#          Exec=android-toolkit
-#          Icon=android-toolkit
-#          Type=Application
-#          Categories=Utility;
-#          EOF
-#
-#      - name: Install ImageMagick
-#        run: sudo apt-get update && sudo apt-get install -y imagemagick
-#
-#      - name: Generate icon
-#        run: |
-#          convert -size 256x256 xc:blue AppDir/android-toolkit.png
-#
-#      - name: Get AppImage tool
-#        run: |
-#          wget https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
-#          chmod +x appimagetool-x86_64.AppImage
-#
-#      - name: Build AppImage
-#        run: |
-#          ARCH=x86_64 ./appimagetool-x86_64.AppImage AppDir android-toolkit-linux.AppImage
-#
-#      - uses: actions/upload-artifact@v4
-#        with:
-#          name: linux
-#          path: android-toolkit-linux.AppImage
+  build-linux-deb:
+    runs-on: ubuntu-latest
+    outputs:
+      artifact-path: ${{ steps.build-linux.outputs.artifact-path }}
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: liberica
+          java-version: 25
+          java-package: 'jdk+fx'
+
+      - name: Build project
+        run: mvn clean package
+
+      - name: Prepare JAR
+        run: cp target/*.jar target/app.jar
+
+      - name: Package app
+        run: jpackage \
+          --type deb \
+          --name AndroidToolkit \
+          --app-version 0.0.1 \
+          --input target \
+          --main-jar app.jar \
+          --main-class app.androidtoolkit.Launcher \
+          --dest dist \
+          --linux-shortcut \
+          --linux-menu-group "Development" \
+          --java-options "--enable-native-access=ALL-UNNAMED"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: dist/
 
   build-windows:
     runs-on: windows-latest
