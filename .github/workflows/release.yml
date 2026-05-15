@@ -14,11 +14,8 @@ jobs:
       - name: Extract version
         id: version
         run: |
-          TAG=${GITHUB_REF_NAME#v}
-          if [[ "$TAG" == "$GITHUB_REF_NAME" ]]; then
-            TAG="0.0.0-dev"
-          fi
-          echo "VERSION=$TAG" >> $GITHUB_OUTPUT
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
 
   build:
     needs: setup
