@@ -44,7 +44,8 @@ jobs:
           java-package: 'jdk+fx'
 
       - name: Set Maven version
-        run: mvn versions:set -DnewVersion=${{ needs.setup.outputs.version }} -DgenerateBackupPoms=false
+        shell: bash
+        run: mvn versions:set -DnewVersion="${{ needs.setup.outputs.version }}" -DgenerateBackupPoms=false
 
       - name: Build
         run: mvn package -DskipTests
