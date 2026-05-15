@@ -2,6 +2,11 @@
 
 # AndroidToolkit
 
+> [!NOTE]
+> AndroidToolkit is a study/learning project created for experimentation and practice.
+> Some features may be incomplete, unstable, or under development.
+> The project may also not be actively maintained at all times.
+
 Modern open-source Android control toolkit powered by ADB.
 
 Cross-platform support for Windows, macOS, and Linux.
