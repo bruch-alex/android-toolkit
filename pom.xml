@@ -6,7 +6,7 @@
 
     <groupId>app</groupId>
     <artifactId>android-toolkit</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.0.0</version>
     <name>android-toolkit</name>
 
     <developers>

@@ -1,16 +1,39 @@
 name: Release
 on:
   push:
-    tags: [ "v*" ]
+    tags:
+      - 'v*.*.*'
   workflow_dispatch:
 
 jobs:
-
-  build-linux-deb:
+  setup:
     runs-on: ubuntu-latest
     outputs:
-      artifact-path: ${{ steps.build-linux.outputs.artifact-path }}
+      version: ${{ steps.version.outputs.VERSION }}
+    steps:
+      - name: Extract version
+        id: version
+        run: |
+          TAG=${GITHUB_REF_NAME#v}
+          if [[ "$TAG" == "$GITHUB_REF_NAME" ]]; then
+            TAG="0.0.0-dev"
+          fi
+          echo "VERSION=$TAG" >> $GITHUB_OUTPUT
 
+  build:
+    needs: setup
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            type: deb
+            jpackage-args: --linux-shortcut
+          - os: macos-latest
+            type: dmg
+            jpackage-args: --mac-package-name AndroidToolkit
+          - os: windows-latest
+            type: msi
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v5
 
@@ -20,66 +43,68 @@ jobs:
           java-version: 25
           java-package: 'jdk+fx'
 
-      - name: Build project
-        run: mvn clean package
+      - name: Set Maven version
+        run: mvn versions:set -DnewVersion=${{ needs.setup.outputs.version }} -DgenerateBackupPoms=false
+
+      - name: Build
+        run: mvn package -DskipTests
 
       - name: Prepare JAR
         run: cp target/*.jar target/app.jar
 
-      - name: Package app
-        run: jpackage \
-          --type deb \
+      - name: jpackage (Unix)
+        if: matrix.os != 'windows-latest'
+        run: |
+          jpackage \
           --name AndroidToolkit \
-          --app-version 0.0.1 \
           --input target \
           --main-jar app.jar \
           --main-class app.androidtoolkit.Launcher \
           --dest dist \
-          --linux-shortcut \
-          --linux-menu-group "Development" \
-          --java-options "--enable-native-access=ALL-UNNAMED"
+          --java-options "--enable-native-access=ALL-UNNAMED" \
+          --type ${{ matrix.type }} \
+          --app-version ${{ needs.setup.outputs.version }} \
+          ${{ matrix.jpackage-args }}
 
-      - uses: actions/upload-artifact@v4
-        with:
-          name: linux
-          path: dist/
-
-  build-windows:
-    runs-on: windows-latest
-
-    steps:
-      - uses: actions/checkout@v5
-
-      - uses: actions/setup-java@v5
-        with:
-          distribution: liberica
-          java-version: 25
-          java-package: jdk+fx
-
-      - name: Build project
-        run: mvn clean package
-
-      - name: Prepare JAR
-        run: |
-          cp target/*.jar target/app.jar
-
-      - name: Create Windows EXE
+      - name: jpackage (Windows)
+        if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
           jpackage `
             --name AndroidToolkit `
-            --win-dir-chooser `
-            --win-per-user-install `
-            --win-console `
-            --win-shortcut `
             --input target `
             --main-jar app.jar `
             --main-class app.androidtoolkit.Launcher `
             --dest dist `
-            --java-options "--enable-native-access=ALL-UNNAMED"
+            --java-options "--enable-native-access=ALL-UNNAMED" `
+            --type ${{ matrix.type }} `
+            --app-version ${{ needs.setup.outputs.version }} `
+            --win-dir-chooser `
+            --win-per-user-install `
+            --win-shortcut
 
-      - name: Upload Windows artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: windows
-          path: dist/
+          name: installer-${{ matrix.os }}
+          path: dist/*
+
+  release:
+    needs: [ setup, build ]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: v${{ needs.setup.outputs.version }}
+          tag_name: ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          files: artifacts/**/*
