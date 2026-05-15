@@ -14,7 +14,9 @@ jobs:
       - name: Extract version
         id: version
         run: |
-          VERSION=$(echo "$GITHUB_REF_NAME" | sed 's/^v//')
+          echo "GITHUB_REF: $GITHUB_REF"
+          echo "GITHUB_REF_NAME: $GITHUB_REF_NAME"
+          VERSION=$(echo "$GITHUB_REF" | sed 's|refs/tags/v||')
           echo "VERSION=$VERSION"
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
 
