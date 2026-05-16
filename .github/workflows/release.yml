@@ -39,7 +39,7 @@ jobs:
           - os: ubuntu-latest
             type: deb
             jpackage-args: --linux-shortcut
-          - os: macos-13
+          - os: macos-15-intel
             type: dmg
             jpackage-args: --mac-package-name AndroidToolkit
           - os: macos-latest
