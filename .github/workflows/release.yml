@@ -136,4 +136,5 @@ jobs:
           tag_name: ${{ github.ref_name }}
           draft: ${{ inputs.draft == true }}
           prerelease: false
+          generate_release_notes: true
           files: artifacts/**/*
