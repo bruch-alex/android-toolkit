@@ -84,6 +84,15 @@ jobs:
             --win-per-user-install `
             --win-shortcut
 
+      - name: Rename artifact
+        shell: bash
+        run: |
+          cd dist
+          for f in *; do
+            ext="${f##*.}"
+            mv "$f" "AndroidToolkit-${{ matrix.os-name }}-${{ runner.arch }}.$ext"
+          done
+
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
