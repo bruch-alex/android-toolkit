@@ -120,6 +120,6 @@ jobs:
         with:
           name: v${{ needs.setup.outputs.version }}
           tag_name: ${{ github.ref_name }}
-          draft: false
+          draft: ${{ inputs.draft == true }}
           prerelease: false
           files: artifacts/**/*
