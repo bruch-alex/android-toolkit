@@ -9,6 +9,10 @@ on:
         description: 'Create as draft release'
         type: boolean
         default: true
+      version:
+        description: 'Version to test (e.g. 1.0.0)'
+        required: true
+        default: '1.0.0-test'
 
 jobs:
   setup:
@@ -19,9 +23,11 @@ jobs:
       - name: Extract version
         id: version
         run: |
-          echo "GITHUB_REF: $GITHUB_REF"
-          echo "GITHUB_REF_NAME: $GITHUB_REF_NAME"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          VERSION="${{ inputs.version }}"
+          else
           VERSION=$(echo "$GITHUB_REF" | sed 's|refs/tags/v||')
+          fi
           echo "VERSION=$VERSION"
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
 
