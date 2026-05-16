@@ -39,6 +39,9 @@ jobs:
           - os: ubuntu-latest
             type: deb
             jpackage-args: --linux-shortcut
+          - os: macos-13
+            type: dmg
+            jpackage-args: --mac-package-name AndroidToolkit
           - os: macos-latest
             type: dmg
             jpackage-args: --mac-package-name AndroidToolkit
@@ -108,7 +111,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
-          name: installer-${{ matrix.os }}
+          name: installer-${{ matrix.os }}${{ runner.arch }}
           path: dist/*
 
   release:
