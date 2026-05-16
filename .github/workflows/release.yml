@@ -38,15 +38,19 @@ jobs:
         include:
           - os: ubuntu-latest
             type: deb
+            os-name: linux
             jpackage-args: --linux-shortcut
           - os: macos-15-intel
             type: dmg
+            os-name: macos
             jpackage-args: --mac-package-name AndroidToolkit
           - os: macos-latest
             type: dmg
+            os-name: macos
             jpackage-args: --mac-package-name AndroidToolkit
           - os: windows-latest
             type: msi
+            os-name: windows
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v6
