@@ -101,7 +101,8 @@ jobs:
           cd dist
           for f in *; do
             ext="${f##*.}"
-            mv "$f" "AndroidToolkit-${{ matrix.os-name }}-${{ runner.arch }}.$ext"
+            ARCH=$(echo "${{ runner.arch }}" | tr '[:upper:]' '[:lower:]')
+            mv "$f" "AndroidToolkit-${{ matrix.os-name }}${ARCH}.${ext}"
           done
 
       - name: Upload artifact
