@@ -3,6 +3,8 @@ package app.androidtoolkit.controller;
 import app.androidtoolkit.AppState;
 import app.androidtoolkit.model.AndroidUser;
 import app.androidtoolkit.model.AppPackage;
+import app.androidtoolkit.service.ADBService;
+import app.androidtoolkit.utils.DialogUtils;
 import app.androidtoolkit.viewmodel.DeviceView;
 import javafx.animation.PauseTransition;
 import javafx.collections.FXCollections;
@@ -12,7 +14,9 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.scene.control.*;
-import javafx.scene.input.*;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.KeyCombination;
 import javafx.util.Duration;
 import lombok.extern.slf4j.Slf4j;
 import org.kordamp.ikonli.Ikon;
@@ -21,12 +25,12 @@ import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.util.Comparator;
 
-import static javafx.scene.input.KeyCombination.CONTROL_DOWN;
-
 @Slf4j
 public class PackageListController {
     private final AppState appState = AppState.getInstance();
+    private final ADBService adb = ADBService.getInstance();
     private final ObservableList<AppPackage> userPackages = FXCollections.observableArrayList();
+
     public TextField searchField;
     public ListView<AppPackage> packageList;
     public CheckBox hideSystemApps;
@@ -190,12 +194,26 @@ public class PackageListController {
         var contextMenu = new ContextMenu();
         contextMenu.getItems().addAll(
                 createCopyMenuItem(),
-                createItem("Delete package", FontAwesomeSolid.TRASH, new KeyCodeCombination(KeyCode.X, CONTROL_DOWN)),
+                createDeleteMenuItem(appPackage),
                 createItem("Disable package", FontAwesomeSolid.STOP, null),
                 createItem("Share package details", FontAwesomeSolid.SHARE, null),
                 createItem("Export details to pdf", FontAwesomeSolid.FILE_PDF, null)
         );
         return contextMenu;
+    }
+
+    private MenuItem createDeleteMenuItem(AppPackage appPackage) {
+        var menuItem = createItem("Delete package", FontAwesomeSolid.TRASH, null);
+        menuItem.setOnAction(_ -> {
+            if (DialogUtils.showConfirmationDialog("Delete Package", "Are you sure you want to delete this package?", true)) {
+                try {
+                    adb.deleteAppForUser(appPackage.getPackageName(), selectedUserBox.getSelectionModel().getSelectedItem().id());
+                } catch (Exception e) {
+                    log.error("Failed to delete package: {}", appPackage.getPackageName(), e);
+                }
+            }
+        });
+        return menuItem;
     }
 
     private MenuItem createCopyMenuItem() {
