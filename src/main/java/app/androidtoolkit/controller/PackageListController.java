@@ -195,11 +195,25 @@ public class PackageListController {
         contextMenu.getItems().addAll(
                 createCopyMenuItem(),
                 createDeleteMenuItem(appPackage),
-                createItem("Disable package", FontAwesomeSolid.STOP, null),
+                createDisableMenuItem(appPackage),
                 createItem("Share package details", FontAwesomeSolid.SHARE, null),
                 createItem("Export details to pdf", FontAwesomeSolid.FILE_PDF, null)
         );
         return contextMenu;
+    }
+
+    private MenuItem createDisableMenuItem(AppPackage appPackage) {
+        var menuItem = createItem("Disable package", FontAwesomeSolid.STOP, null);
+        menuItem.setOnAction(_ -> {
+            if (DialogUtils.showConfirmationDialog("Disable Package", "Are you sure you want to disable this package?")) {
+                try {
+                    adb.setEnabledToDisabled(appPackage.getPackageName(), selectedUserBox.getSelectionModel().getSelectedItem().id());
+                } catch (Exception e) {
+                    log.error("Failed to disable package: {}", appPackage.getPackageName(), e);
+                }
+            }
+        });
+        return menuItem;
     }
 
     private MenuItem createDeleteMenuItem(AppPackage appPackage) {
