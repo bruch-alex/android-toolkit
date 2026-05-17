@@ -12,20 +12,13 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.scene.control.*;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyCodeCombination;
-import javafx.scene.input.KeyCombination;
+import javafx.scene.input.*;
 import javafx.util.Duration;
 import lombok.extern.slf4j.Slf4j;
-import org.controlsfx.glyphfont.FontAwesome;
 import org.kordamp.ikonli.Ikon;
-import org.kordamp.ikonli.Ikonli;
-import org.kordamp.ikonli.fontawesome6.FontAwesomeRegularIkonHandler;
-import org.kordamp.ikonli.fontawesome6.FontAwesomeRegularIkonProvider;
 import org.kordamp.ikonli.fontawesome6.FontAwesomeSolid;
 import org.kordamp.ikonli.javafx.FontIcon;
 
-import javax.swing.*;
 import java.util.Comparator;
 
 import static javafx.scene.input.KeyCombination.CONTROL_DOWN;
@@ -127,7 +120,7 @@ public class PackageListController {
                     setText(null);
                 } else {
                     setText(item.getPackageName());
-                    setContextMenu(createContextMenuForPackage());
+                    setContextMenu(createContextMenuForPackage(item));
                 }
             }
         });
@@ -193,10 +186,10 @@ public class PackageListController {
         });
     }
 
-    private ContextMenu createContextMenuForPackage() {
+    private ContextMenu createContextMenuForPackage(AppPackage appPackage) {
         var contextMenu = new ContextMenu();
         contextMenu.getItems().addAll(
-                createItem("Copy package name", FontAwesomeSolid.COPY, new KeyCodeCombination(KeyCode.C, CONTROL_DOWN)),
+                createCopyMenuItem(),
                 createItem("Delete package", FontAwesomeSolid.TRASH, new KeyCodeCombination(KeyCode.X, CONTROL_DOWN)),
                 createItem("Disable package", FontAwesomeSolid.STOP, null),
                 createItem("Share package details", FontAwesomeSolid.SHARE, null),
@@ -205,6 +198,16 @@ public class PackageListController {
         return contextMenu;
     }
 
+    private MenuItem createCopyMenuItem() {
+        var menuItem = createItem("Copy package name", FontAwesomeSolid.COPY, null);
+        menuItem.setOnAction(_ -> {
+            var clipboard = Clipboard.getSystemClipboard();
+            var content = new ClipboardContent();
+            content.putString(appState.getSelectedPackage().get().getPackageName());
+            clipboard.setContent(content);
+        });
+        return menuItem;
+    }
 
     private MenuItem createItem(String text, Ikon graphic, KeyCombination accelerator) {
         var item = new MenuItem(text);
