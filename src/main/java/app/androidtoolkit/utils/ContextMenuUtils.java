@@ -26,9 +26,7 @@ public final class ContextMenuUtils {
         contextMenu.getItems().addAll(
                 createCopyMenuItem(),
                 createDeleteMenuItem(appPackage),
-                createDisableMenuItem(appPackage),
-                createItem("Share package details", FontAwesomeSolid.SHARE, null),
-                createItem("Export details to pdf", FontAwesomeSolid.FILE_PDF, null)
+                createDisableMenuItem(appPackage)
         );
         return contextMenu;
     }
