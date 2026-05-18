@@ -3,7 +3,6 @@ package app.androidtoolkit.controller;
 import app.androidtoolkit.service.ADBService;
 import app.androidtoolkit.utils.ADBInstaller;
 import atlantafx.base.controls.Card;
-import javafx.beans.value.ChangeListener;
 import javafx.concurrent.Task;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
@@ -12,18 +11,13 @@ import javafx.scene.layout.BorderPane;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.file.Path;
-import java.util.concurrent.ScheduledFuture;
 
 @Slf4j
 public class SetupScreenController {
-    private final ADBService adb = ADBService.getInstance();
-
     public BorderPane rootPane;
     public Card devicesCard;
     public ProgressBar progressBar;
     public Label statusLabel;
-    private ChangeListener<Boolean> adbServiceListener;
-    private ScheduledFuture<?> adbPollTask;
 
     public void initialize() {
         log.debug("Starting SetupController initialization");
