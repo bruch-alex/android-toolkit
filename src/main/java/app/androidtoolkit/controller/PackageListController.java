@@ -6,6 +6,7 @@ import app.androidtoolkit.model.AppPackage;
 import app.androidtoolkit.service.ADBService;
 import app.androidtoolkit.utils.ContextMenuUtils;
 import app.androidtoolkit.viewmodel.DeviceView;
+import atlantafx.base.theme.Styles;
 import javafx.animation.PauseTransition;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -14,6 +15,8 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 import lombok.extern.slf4j.Slf4j;
 
@@ -110,14 +113,28 @@ public class PackageListController {
 
     private void setupUI() {
         packageList.setCellFactory(_ -> new ListCell<>() {
+            private final Label packageNameLabel = new Label();
+            private final Label systemLabel = new Label();
+            private final Label enabledLabel = new Label();
+            private final HBox tags = new HBox(2, systemLabel, enabledLabel);
+            private final VBox container = new VBox(packageNameLabel, tags);
+
+            {
+                packageNameLabel.getStyleClass().addAll(Styles.TEXT, Styles.TEXT_BOLD);
+                systemLabel.getStyleClass().addAll(Styles.TEXT, Styles.TEXT_ITALIC);
+                enabledLabel.getStyleClass().addAll(Styles.TEXT, Styles.TEXT_ITALIC);
+            }
+
             @Override
             protected void updateItem(AppPackage item, boolean empty) {
                 super.updateItem(item, empty);
 
                 if (empty || item == null) {
-                    setText(null);
+                    setGraphic(null);
+                    setContextMenu(null);
                 } else {
-                    setText(item.getPackageName());
+                    updateContent(item);
+                    setGraphic(container);
                     setContextMenu(ContextMenuUtils.createContextMenuForPackage(item, ()-> {
                         packageList.refresh();
                         packageList.getSelectionModel().clearSelection();
@@ -125,7 +142,26 @@ public class PackageListController {
                     }));
                 }
             }
+
+            private void updateContent(AppPackage item) {
+                final boolean isSystemApp = item.isSystemApp();
+                final boolean isEnabled = item.getInstanceDetailsMap()
+                        .get(appState.getSelectedUser().get().id())
+                        .isEnabled();
+
+                packageNameLabel.setText(item.getPackageName());
+
+                systemLabel.setText(isSystemApp ? "System" : "");
+                systemLabel.setVisible(isSystemApp);
+                systemLabel.getStyleClass().removeAll(Styles.DANGER, Styles.TEXT_MUTED);
+                systemLabel.getStyleClass().add(isSystemApp ? Styles.DANGER : Styles.TEXT_MUTED);
+
+                enabledLabel.setText(isEnabled ? "Enabled" : "Disabled");
+                enabledLabel.getStyleClass().removeAll(Styles.SUCCESS, Styles.TEXT_MUTED);
+                enabledLabel.getStyleClass().add(isEnabled ? Styles.SUCCESS : Styles.TEXT_MUTED);
+            }
         });
+
         selectedUserBox.setCellFactory(_ -> new ListCell<>() {
             @Override
             protected void updateItem(AndroidUser user, boolean empty) {
