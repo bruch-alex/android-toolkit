@@ -40,7 +40,7 @@ public final class ContextMenuUtils {
     }
 
     private static MenuItem createDisablePackageMenuItem(AppPackage appPackage, Runnable onSuccess) {
-        var menuItem = createItem("Disable package", FontAwesomeSolid.STOP, null);
+        var menuItem = createItem("Disable package", FontAwesomeSolid.STOP_CIRCLE, null);
         menuItem.setOnAction(_ -> {
             if (DialogUtils.showConfirmationDialog("Disable Package", "Are you sure you want to disable this package?")) {
                 try {
@@ -59,7 +59,7 @@ public final class ContextMenuUtils {
     }
 
     private static MenuItem createEnablePackageMenuItem(AppPackage appPackage, Runnable onSuccess) {
-        var menuItem = createItem("Enable package", FontAwesomeSolid.ARROW_ALT_CIRCLE_RIGHT, null);
+        var menuItem = createItem("Enable package", FontAwesomeSolid.PLAY_CIRCLE, null);
         menuItem.setOnAction(_ -> {
             if (DialogUtils.showConfirmationDialog("Enable Package", "Are you sure you want to enable this package?")) {
                 try {
