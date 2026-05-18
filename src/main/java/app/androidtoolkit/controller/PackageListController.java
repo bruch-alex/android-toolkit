@@ -135,11 +135,7 @@ public class PackageListController {
                 } else {
                     updateContent(item);
                     setGraphic(container);
-                    setContextMenu(ContextMenuUtils.createContextMenuForPackage(item, ()-> {
-                        packageList.refresh();
-                        packageList.getSelectionModel().clearSelection();
-                        appState.getSelectedPackage().set(item);
-                    }));
+                    setContextMenu(ContextMenuUtils.createContextMenuForPackage(item, () -> packageList.refresh()));
                 }
             }
 
