@@ -3,6 +3,7 @@ package app.androidtoolkit.controller;
 import app.androidtoolkit.AppState;
 import app.androidtoolkit.model.AppPackage;
 import app.androidtoolkit.service.ADBService;
+import app.androidtoolkit.utils.DialogUtils;
 import javafx.collections.FXCollections;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
@@ -57,7 +58,7 @@ public class PackageInfoController {
         var packageName = newPackage.getPackageName();
         if (enabled) {
             try {
-                if (showConfirmationDialog("Disable Package", "Are you sure you want to disable this package?")) {
+                if (DialogUtils.showConfirmationDialog("Disable Package", "Are you sure you want to disable this package?")) {
                     adb.setEnabledToDisabled(packageName, uid);
                 }
 
@@ -66,7 +67,7 @@ public class PackageInfoController {
             }
         } else {
             try {
-                if (showConfirmationDialog("Enable Package", "Are you sure you want to enable this package?")) {
+                if (DialogUtils.showConfirmationDialog("Enable Package", "Are you sure you want to enable this package?")) {
                     adb.setEnabledToDefaultState(packageName, uid);
                 }
             } catch (Exception e) {
@@ -80,30 +81,12 @@ public class PackageInfoController {
         var uid = appState.getSelectedUser().get().id();
         var packageName = newPackage.getPackageName();
         try {
-            if (showConfirmationDialog("Delete Package", "Are you sure you want to delete this package?", true)) {
+            if (DialogUtils.showConfirmationDialog("Delete Package", "Are you sure you want to delete this package?", true)) {
                 adb.deleteAppForUser(packageName, uid);
             }
         } catch (Exception e) {
             log.error("Failed to delete package: {}", packageName, e);
         }
-    }
-
-    private boolean showConfirmationDialog(String title, String headerText, boolean permanent) {
-        var alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-
-        if (permanent) {
-            headerText += "\nThis action cannot be undone.";
-        }
-        alert.setContentText(headerText);
-        return alert.showAndWait()
-                .filter(response -> response == ButtonType.OK)
-                .isPresent();
-    }
-
-    private boolean showConfirmationDialog(String title, String headerText) {
-        return showConfirmationDialog(title, headerText, false);
     }
 }
 
