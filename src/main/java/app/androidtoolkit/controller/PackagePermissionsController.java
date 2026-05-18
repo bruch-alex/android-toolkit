@@ -92,17 +92,17 @@ public class PackagePermissionsController {
                     setupGrantButton();
                 }
                 statusLabel.setText(granted ? "Granted" : "Revoked");
+                statusLabel.getStyleClass().addAll(Styles.TEXT, Styles.TEXT_ITALIC);
                 statusLabel.getStyleClass().removeAll(
-                        Styles.SUCCESS,
+                        Styles.TEXT_MUTED,
                         Styles.DANGER
                 );
 
                 statusLabel.getStyleClass().add(
                         granted
                                 ? Styles.DANGER
-                                : Styles.SUCCESS
+                                : Styles.TEXT_MUTED
                 );
-                statusLabel.setStyle("-fx-font-style: italic;");
             }
 
             private void setupGrantButton() {
