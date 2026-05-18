@@ -21,24 +21,56 @@ public final class ContextMenuUtils {
     private ContextMenuUtils() {
     }
 
-    public static ContextMenu createContextMenuForPackage(AppPackage appPackage) {
+    public static ContextMenu createContextMenuForPackage(AppPackage appPackage, Runnable onSuccess) {
         var contextMenu = new ContextMenu();
         contextMenu.getItems().addAll(
                 createCopyMenuItem(),
                 createDeleteMenuItem(appPackage),
-                createDisableMenuItem(appPackage)
+                createChangeEnabledStatusMenuItem(appPackage, onSuccess)
         );
         return contextMenu;
     }
 
-    private static MenuItem createDisableMenuItem(AppPackage appPackage) {
-        var menuItem = createItem("Disable package", FontAwesomeSolid.STOP, null);
+    private static MenuItem createChangeEnabledStatusMenuItem(AppPackage appPackage, Runnable onSuccess) {
+        if (appPackage.getInstanceDetailsMap().get(appState.getSelectedUser().get().id()).isEnabled()) {
+            return createDisablePackageMenuItem(appPackage, onSuccess);
+        } else {
+            return createEnablePackageMenuItem(appPackage, onSuccess);
+        }
+    }
+
+    private static MenuItem createDisablePackageMenuItem(AppPackage appPackage, Runnable onSuccess) {
+        var menuItem = createItem("Disable package", FontAwesomeSolid.STOP_CIRCLE, null);
         menuItem.setOnAction(_ -> {
             if (DialogUtils.showConfirmationDialog("Disable Package", "Are you sure you want to disable this package?")) {
                 try {
+                    System.out.println("Disabling package:");
                     adb.setEnabledToDisabled(appPackage.getPackageName(), appState.getSelectedUser().get().id());
+                    appPackage.getInstanceDetailsMap()
+                            .get(appState.getSelectedUser().get().id())
+                            .setEnabled(false);
+                    onSuccess.run();
                 } catch (Exception e) {
                     log.error("Failed to disable package: {}", appPackage.getPackageName(), e);
+                }
+            }
+        });
+        return menuItem;
+    }
+
+    private static MenuItem createEnablePackageMenuItem(AppPackage appPackage, Runnable onSuccess) {
+        var menuItem = createItem("Enable package", FontAwesomeSolid.PLAY_CIRCLE, null);
+        menuItem.setOnAction(_ -> {
+            if (DialogUtils.showConfirmationDialog("Enable Package", "Are you sure you want to enable this package?")) {
+                try {
+                    System.out.println("Enabling package:");
+                    adb.setEnabledToDefaultState(appPackage.getPackageName(), appState.getSelectedUser().get().id());
+                    appPackage.getInstanceDetailsMap()
+                            .get(appState.getSelectedUser().get().id())
+                            .setEnabled(true);
+                    onSuccess.run();
+                } catch (Exception e) {
+                    log.error("Failed to enable package: {}", appPackage.getPackageName(), e);
                 }
             }
         });
