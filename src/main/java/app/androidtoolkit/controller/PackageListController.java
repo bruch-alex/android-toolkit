@@ -118,7 +118,11 @@ public class PackageListController {
                     setText(null);
                 } else {
                     setText(item.getPackageName());
-                    setContextMenu(ContextMenuUtils.createContextMenuForPackage(item));
+                    setContextMenu(ContextMenuUtils.createContextMenuForPackage(item, ()-> {
+                        packageList.refresh();
+                        packageList.getSelectionModel().clearSelection();
+                        appState.getSelectedPackage().set(item);
+                    }));
                 }
             }
         });

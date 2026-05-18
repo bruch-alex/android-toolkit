@@ -21,22 +21,26 @@ public final class ContextMenuUtils {
     private ContextMenuUtils() {
     }
 
-    public static ContextMenu createContextMenuForPackage(AppPackage appPackage) {
+    public static ContextMenu createContextMenuForPackage(AppPackage appPackage, Runnable onSuccess) {
         var contextMenu = new ContextMenu();
         contextMenu.getItems().addAll(
                 createCopyMenuItem(),
                 createDeleteMenuItem(appPackage),
-                createDisableMenuItem(appPackage)
+                createDisableMenuItem(appPackage, onSuccess)
         );
         return contextMenu;
     }
 
-    private static MenuItem createDisableMenuItem(AppPackage appPackage) {
+    private static MenuItem createDisableMenuItem(AppPackage appPackage, Runnable onSuccess) {
         var menuItem = createItem("Disable package", FontAwesomeSolid.STOP, null);
         menuItem.setOnAction(_ -> {
             if (DialogUtils.showConfirmationDialog("Disable Package", "Are you sure you want to disable this package?")) {
                 try {
                     adb.setEnabledToDisabled(appPackage.getPackageName(), appState.getSelectedUser().get().id());
+                    appPackage.getInstanceDetailsMap()
+                            .get(appState.getSelectedUser().get().id())
+                            .setEnabled(false);
+                    onSuccess.run();
                 } catch (Exception e) {
                     log.error("Failed to disable package: {}", appPackage.getPackageName(), e);
                 }
