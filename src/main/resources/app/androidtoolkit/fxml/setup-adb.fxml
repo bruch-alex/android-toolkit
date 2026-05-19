@@ -32,7 +32,7 @@
                         <VBox spacing="10" alignment="CENTER">
                             <RingProgressIndicator/>
 
-                            <Label text="Device not connected"
+                            <Label text="Connect Android Device"
                                    style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
 
                             <Label text="To connect your Android device:"/>
