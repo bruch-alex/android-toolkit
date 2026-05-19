@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import atlantafx.base.controls.Card?>
-<?import atlantafx.base.layout.InputGroup?>
+<?import atlantafx.base.controls.RingProgressIndicator?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <BorderPane xmlns="http://javafx.com/javafx"
@@ -10,8 +10,14 @@
             onMouseClicked="#onBackgroundClicked"
             fx:id="rootPane">
 
-    <center>
+    <top>
+        <VBox spacing="12" alignment="CENTER">
+            <Label fx:id="statusLabel"/>
+            <ProgressBar fx:id="progressBar"/>
+        </VBox>
+    </top>
 
+    <center>
         <StackPane>
 
             <VBox spacing="16"
@@ -19,68 +25,24 @@
                   maxWidth="700"
                   prefWidth="700">
 
-                <!--Show only on Windows-->
-                <Card maxWidth="Infinity" fx:id="windowsTipCard">
-                    <body>
-                        <VBox spacing="12" alignment="CENTER">
-                            <Label text="On Windows, the ADB service may need to be started manually."/>
-                            <Label text="Run 'adb start-server' before clicking 'Start' in this app"/>
-                        </VBox>
-                    </body>
-                </Card>
-
-                <!-- CARD 1 -->
-                <Card maxWidth="Infinity">
-                    <body>
-                        <VBox spacing="12" alignment="CENTER">
-
-                            <InputGroup alignment="CENTER" fx:id="pathGroup">
-                                <TextField fx:id="customAdbPathTextField"
-                                           promptText="Android SDK or adb path"/>
-
-                                <Button fx:id="setPathButton"
-                                        text="Browse"/>
-                            </InputGroup>
-
-                            <Label fx:id="adbStatusLabel"
-                                   text="ADB not found"/>
-
-                            <Button fx:id="scanDefaultAdbLocationsButton"
-                                    text="Scan default adb locations"/>
-
-                            <Button fx:id="startButton"
-                                    text="Start"
-                                    disable="true"/>
-
-                        </VBox>
-                    </body>
-                </Card>
-
-                <!-- CARD 2 -->
                 <Card fx:id="devicesCard"
                       visible="false"
                       maxWidth="Infinity">
-
                     <body>
                         <VBox spacing="10" alignment="CENTER">
+                            <RingProgressIndicator/>
 
-                            <Label text="Device not connected"
+                            <Label text="Connect Android Device"
                                    style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
 
                             <Label text="To connect your Android device:"/>
 
-                            <VBox spacing="6" alignment="CENTER_LEFT">
-
+                            <VBox spacing="6" alignment="CENTER">
                                 <Label text="1. Enable Developer Options"/>
                                 <Label text="2. Enable USB Debugging"/>
                                 <Label text="3. Connect via USB cable"/>
                                 <Label text="4. Accept RSA prompt on device"/>
-
                             </VBox>
-
-                            <Label text="Tip: Run 'adb devices' to verify connection"
-                                   style="-fx-font-size: 11px; -fx-opacity: 0.7;"/>
-
                         </VBox>
                     </body>
                 </Card>
