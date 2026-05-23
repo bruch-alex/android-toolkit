@@ -15,8 +15,8 @@
 
     <!-- Column setup -->
     <columnConstraints>
-        <ColumnConstraints percentWidth="50" hgrow="ALWAYS"/>
-        <ColumnConstraints percentWidth="50" hgrow="ALWAYS"/>
+        <ColumnConstraints percentWidth="70" hgrow="ALWAYS"/>
+        <ColumnConstraints percentWidth="30" hgrow="ALWAYS"/>
     </columnConstraints>
 
     <!-- Row setup -->
@@ -24,20 +24,7 @@
         <RowConstraints vgrow="ALWAYS"/>
     </rowConstraints>
 
-    <VBox spacing="10" GridPane.columnIndex="0" GridPane.rowIndex="0">
-        <Label fx:id="packageNameLabel" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
-        <Label fx:id="enabledStatusLabel"/>
-
-        <HBox>
-            <Label text="appId:"/>
-            <Label fx:id="appIdLabel"/>
-        </HBox>
-        <HBox>
-            <Label text="versionName:"/>
-            <Label fx:id="versionNameLabel"/>
-        </HBox>
-
-    </VBox>
+    <VBox fx:id="packageDetailsContainer" spacing="10" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
 
     <VBox spacing="5" GridPane.columnIndex="1" GridPane.rowIndex="0">
         <Label text="Queries packages"/>

@@ -3,10 +3,13 @@ package app.androidtoolkit.controller;
 import app.androidtoolkit.AppState;
 import app.androidtoolkit.model.AppPackage;
 import app.androidtoolkit.service.ADBService;
-import app.androidtoolkit.utils.DialogUtils;
+import atlantafx.base.theme.Styles;
 import javafx.collections.FXCollections;
-import javafx.scene.control.*;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -15,12 +18,9 @@ public class PackageInfoController {
     private final ADBService adb = ADBService.getInstance();
 
     public Label totalQueriedPackagesLabel;
-    public Label packageNameLabel;
-    public Label enabledStatusLabel;
-    public Label appIdLabel;
-    public Label versionNameLabel;
     public ListView<String> queriedPackagesListView;
     public GridPane container;
+    public VBox packageDetailsContainer;
 
     public void initialize() {
         appState.getConnectedDevice().addListener((_, _, newDevice) -> {
@@ -31,12 +31,7 @@ public class PackageInfoController {
                         queriedPackagesListView.setItems(FXCollections.observableArrayList());
                         return;
                     }
-                    var enabled = newPackage.getInstanceDetailsMap().get(appState.getSelectedUser().get().id()).isEnabled();
-                    enabledStatusLabel.setText(enabled ? "Enabled" : "Disabled");
-
-                    packageNameLabel.setText(newPackage.getPackageName());
-                    appIdLabel.setText(newPackage.getPackageDetails().getAppId());
-                    versionNameLabel.setText(newPackage.getPackageDetails().getVersionName());
+                    setupDetailsContainer(newPackage);
                     totalQueriedPackagesLabel.setText(String.valueOf(newPackage.getPackageDetails().getQueriesPackages().size()));
                     queriedPackagesListView.setItems(
                             FXCollections.observableArrayList(newPackage.getPackageDetails().getQueriesPackages()));
@@ -46,7 +41,27 @@ public class PackageInfoController {
         });
     }
 
+    private void setupDetailsContainer(AppPackage newPackage) {
+        packageDetailsContainer.getChildren().clear();
 
+        var packageNameLabel = new Label(newPackage.getPackageName());
+        packageNameLabel.getStyleClass().addAll("text-bold", Styles.TITLE_3);
 
+        var enabled = newPackage.getInstanceDetailsMap().get(appState.getSelectedUser().get().id()).isEnabled();
+        var enabledStatusLabel = new Label(enabled ? "Enabled" : "Disabled");
+
+        var appIdLabel = new Label(newPackage.getPackageDetails().getAppId());
+        var appIdContainer = new HBox(2, new Label("App ID:"), appIdLabel);
+
+        var versionNameLabel = new Label(newPackage.getPackageDetails().getVersionName());
+        var versionNameContainer = new HBox(2, new Label("Version:"), versionNameLabel);
+
+        packageDetailsContainer.getChildren().addAll(
+                packageNameLabel,
+                enabledStatusLabel,
+                appIdContainer,
+                versionNameContainer
+        );
+    }
 }
 
