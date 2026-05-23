@@ -7,12 +7,14 @@ import app.androidtoolkit.model.PackageDetails;
 import app.androidtoolkit.model.permissions.DeclaredPermission;
 import app.androidtoolkit.model.permissions.InstallPermission;
 import app.androidtoolkit.model.permissions.RuntimePermission;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Slf4j
 public final class PackageDetailsParser {
 
     private static final Pattern PACKAGE_HEADER_PATTERN = Pattern.compile("Package \\[([^]]+)]");
@@ -131,14 +133,15 @@ public final class PackageDetailsParser {
             if (line.startsWith("appId=")) {
                 packageDetails.setAppId(line.substring("appId=".length()));
             } else if (line.startsWith("versionName=")) {
-                System.out.println("Found versionName: " + line);
                 packageDetails.setVersionName(line.substring("versionName=".length()));
             } else if (line.startsWith("versionCode=")) {
-                System.out.println("Found versionCode: " + line);
                 var codeDetails = line.split(" ");
                 packageDetails.setVersionCode(codeDetails[0].substring("versionCode=".length()));
                 packageDetails.setMinSdkVersion(Integer.parseInt(codeDetails[1].substring("minSdk=".length())));
                 packageDetails.setTargetSdkVersion(Integer.parseInt(codeDetails[2].substring("targetSdk=".length())));
+            } else if (line.startsWith("flags=[")) {
+                line = line.substring("flags=".length());
+                packageDetails.setFlags(parseFlagsArray(line));
             }
         }
         return packageDetails;
@@ -196,5 +199,34 @@ public final class PackageDetailsParser {
             }
         }
         return packages;
+    }
+
+
+    /**
+     * Parses a string representation of a flag array and extracts individual flags.
+     * The input string is expected to be enclosed within square brackets and
+     * contain space-separated flags.
+     *
+     * @param line the string representation of the flag array to be parsed.
+     *             It should start with "[" and end with "]".
+     * @return a list of parsed flags as strings.
+     * @throws IllegalArgumentException if the input string is not in the expected format.
+     */
+    private static List<String> parseFlagsArray(String line) throws IllegalArgumentException {
+        if (!line.startsWith("[") || !line.endsWith("]")) {
+            throw new IllegalArgumentException("Expected a flags array like \"[A B C]\", got: \"" + line + "\"");
+        }
+        log.debug("Parsing flags array: {}", line);
+        final List<String> outputFlags = new ArrayList<>();
+        var flags = line.substring(1, line.length() - 1).split(" ");
+        for (var flag : flags) {
+            flag = flag.trim().replace("]", "");
+            if (flag.isBlank()) {
+                continue;
+            }
+            outputFlags.add(flag);
+        }
+        log.debug("Parsed flags array size: {}, content: {}", outputFlags.size(), outputFlags);
+        return outputFlags;
     }
 }
