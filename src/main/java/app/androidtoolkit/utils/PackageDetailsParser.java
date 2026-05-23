@@ -142,6 +142,9 @@ public final class PackageDetailsParser {
             } else if (line.startsWith("flags=[")) {
                 line = line.substring("flags=".length());
                 packageDetails.setFlags(parseFlagsArray(line));
+            } else if (line.startsWith("privateFlags=[")) {
+                line = line.substring("privateFlags=".length());
+                packageDetails.setPrivateFlags(parseFlagsArray(line));
             }
         }
         return packageDetails;

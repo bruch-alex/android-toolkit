@@ -15,6 +15,7 @@ public class PackageDetails {
     private int targetSdkVersion;
     private String versionName;
     private List<String> flags;
+    private List<String> privateFlags;
     private List<String> queriesPackages;
     private List<DeclaredPermission> declaredPermissions;
     private List<String> requestedPermissions;
@@ -26,5 +27,6 @@ public class PackageDetails {
         this.requestedPermissions = List.of();
         this.queriesPackages = List.of();
         this.flags = List.of();
+        this.privateFlags = List.of();
     }
 }
