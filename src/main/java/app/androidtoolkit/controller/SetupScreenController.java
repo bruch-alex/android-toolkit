@@ -6,10 +6,7 @@ import app.androidtoolkit.service.ADBService;
 import app.androidtoolkit.utils.ADBInstaller;
 import atlantafx.base.controls.Card;
 import javafx.concurrent.Task;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.ProgressBar;
+import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import lombok.extern.slf4j.Slf4j;
@@ -61,6 +58,17 @@ public class SetupScreenController {
 
     public void onAdbSucceed() {
         devicesCard.setVisible(true);
+        devicesListView.setCellFactory(_ -> new ListCell<>() {
+            @Override
+            protected void updateItem(AndroidDeviceRecord device, boolean empty) {
+                super.updateItem(device, empty);
+                if (empty || device == null) {
+                    setText(null);
+                } else {
+                    setText(device.model() + " (serial: " + device.serial() + " )");
+                }
+            }
+        });
         devicesListView.setItems(state.getConnectedDevices());
     }
 
