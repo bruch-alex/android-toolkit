@@ -40,7 +40,7 @@ public class PackageListController {
 
     public void initialize() {
         setupUI();
-        appState.getConnectedDevice().addListener((_, _, newValue) -> {
+        appState.getSelectedDevice().addListener((_, _, newValue) -> {
             if (newValue != null) {
                 onDeviceConnect(newValue);
                 applyFilters();

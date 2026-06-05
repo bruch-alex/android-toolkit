@@ -1,5 +1,7 @@
-package app.androidtoolkit.model;
+package app.androidtoolkit.model.device;
 
+import app.androidtoolkit.model.AndroidUser;
+import app.androidtoolkit.model.AppPackage;
 import lombok.Builder;
 import lombok.Data;
 

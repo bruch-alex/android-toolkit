@@ -2,9 +2,10 @@ package app.androidtoolkit.service;
 
 import app.androidtoolkit.AppState;
 import app.androidtoolkit.mapper.AndroidDeviceMapper;
-import app.androidtoolkit.model.AndroidDevice;
+import app.androidtoolkit.model.device.AndroidDevice;
 import app.androidtoolkit.model.AndroidUser;
 import app.androidtoolkit.model.AppPackage;
+import app.androidtoolkit.model.device.AndroidDeviceRecord;
 import app.androidtoolkit.utils.PackageDetailsParser;
 import com.android.ddmlib.*;
 import javafx.application.Platform;
@@ -56,9 +57,7 @@ public class ADBService {
 
             isAdbServiceRunning.set(true);
 
-            registerDeviceListeners(bridge);
-
-            refreshDevices(bridge);
+            registerDeviceListeners();
 
             registerPackageSelectionListener();
 
@@ -94,27 +93,27 @@ public class ADBService {
         return bridge;
     }
 
-    private void registerDeviceListeners(AndroidDebugBridge bridge) {
+    private void registerDeviceListeners() {
         AndroidDebugBridge.addDeviceChangeListener(
                 new AndroidDebugBridge.IDeviceChangeListener() {
                     @Override
                     public void deviceConnected(IDevice device) {
-                        log.info("Device connected: {}", device.getSerialNumber());
-                        refreshDevices(bridge);
+                        log.info("New device connected, serial: {}, model: {}", device.getSerialNumber(), device.getProperty(IDevice.PROP_DEVICE_MODEL));
+                        Platform.runLater(() -> appState.getConnectedDevices().add(new AndroidDeviceRecord(device.getSerialNumber(), device.getProperty(IDevice.PROP_DEVICE_MODEL))));
                     }
 
                     @Override
                     public void deviceDisconnected(IDevice device) {
-                        log.info("Device disconnected: {}", device.getSerialNumber());
+                        log.info("Device disconnected, serial: {}, model: {}", device.getSerialNumber(), device.getProperty(IDevice.PROP_DEVICE_MODEL));
                         connectedIDevice = null;
                         Platform.runLater(appState::deviceDisconnected);
-                        refreshDevices(bridge);
+                        Platform.runLater(() -> appState.getConnectedDevices().remove(new AndroidDeviceRecord(device.getSerialNumber(), device.getProperty(IDevice.PROP_DEVICE_MODEL))));
                     }
 
                     @Override
                     public void deviceChanged(IDevice device, int changeMask) {
-                        log.debug("Device changed: {} mask={}", device.getSerialNumber(), changeMask);
-                        refreshDevices(bridge);
+                        log.debug("Device changed: {} mask={}", device.getName(), changeMask);
+//                        Platform.runLater(() -> appState.getConnectedDevices().put(device.getSerialNumber(),  device.getProperty(IDevice.PROP_DEVICE_MODEL)));
                     }
                 }
         );
@@ -145,13 +144,12 @@ public class ADBService {
         });
     }
 
-    private void refreshDevices(AndroidDebugBridge bridge) {
+    public void connectToDevice(AndroidDeviceRecord device) {
         AndroidDevice newDevice = null;
         if (bridge != null) {
             log.debug("ADB Bridge initialized");
             for (IDevice d : bridge.getDevices()) {
-                log.debug("Checking device: {}", d);
-                if (d != null && d.isOnline()) {
+                if (d != null && d.isOnline() && d.getSerialNumber().equals(device.serial())) {
                     log.debug("Configuring new device: {}", d);
                     connectedIDevice = d;
                     newDevice = AndroidDeviceMapper.toModel(d);
@@ -168,7 +166,7 @@ public class ADBService {
         }
         var finalDevice = newDevice;
         log.debug("Configured device: {}", finalDevice);
-        Platform.runLater(() -> appState.getConnectedDevice().set(finalDevice == null ? null : AndroidDeviceMapper.toView(finalDevice)));
+        Platform.runLater(() -> appState.getSelectedDevice().set(finalDevice == null ? null : AndroidDeviceMapper.toView(finalDevice)));
     }
 
     private List<AndroidUser> getUsers(IDevice device) throws ShellCommandUnresponsiveException, AdbCommandRejectedException, IOException, TimeoutException {
@@ -203,15 +201,14 @@ public class ADBService {
             Map<String, AppPackage> scannedPackages = scanAllAppsToMap(users);
 
             Platform.runLater(() -> {
-                appState.getConnectedDevice().get().getPackages().clear();
+                appState.getSelectedDevice().get().getPackages().clear();
                 log.debug("Scanned packages: {}", scannedPackages.size());
-                appState.getConnectedDevice().get().getPackages().putAll(scannedPackages);
+                appState.getSelectedDevice().get().getPackages().putAll(scannedPackages);
             });
         });
     }
 
     private Map<String, AppPackage> scanAllAppsToMap(List<AndroidUser> users) {
-        System.out.println("Scanning all apps...");
         Map<String, AppPackage> scannedPackages = new HashMap<>();
         try {
             for (AndroidUser user : users) {
@@ -397,7 +394,7 @@ public class ADBService {
                 for (String line : lines) {
                     if (line.contains("Success")) {
                         System.out.println("App deleted: " + packageName);
-                        appState.getConnectedDevice().get().getPackages().remove(packageName);
+                        appState.getSelectedDevice().get().getPackages().remove(packageName);
                         return;
                     }
                 }

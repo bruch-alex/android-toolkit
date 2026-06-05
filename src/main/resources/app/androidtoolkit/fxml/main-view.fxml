@@ -10,6 +10,7 @@
         <MenuBar>
             <Menu text="File">
                 <MenuItem text="Settings"/>
+                <MenuItem text="Disconnect" onAction="#disconnectFromDevice"/>
             </Menu>
             <Menu text="Help">
                 <MenuItem text="About"/>

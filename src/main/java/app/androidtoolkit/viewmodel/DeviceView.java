@@ -1,6 +1,6 @@
 package app.androidtoolkit.viewmodel;
 
-import app.androidtoolkit.model.AndroidDevice;
+import app.androidtoolkit.model.device.AndroidDevice;
 import app.androidtoolkit.model.AndroidUser;
 import app.androidtoolkit.model.AppPackage;
 import javafx.beans.property.SimpleStringProperty;

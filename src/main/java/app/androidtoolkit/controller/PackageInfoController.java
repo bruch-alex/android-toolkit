@@ -1,9 +1,7 @@
 package app.androidtoolkit.controller;
 
 import app.androidtoolkit.AppState;
-import app.androidtoolkit.model.AppPackage;
 import app.androidtoolkit.service.ADBService;
-import app.androidtoolkit.utils.DialogUtils;
 import javafx.collections.FXCollections;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
@@ -23,7 +21,7 @@ public class PackageInfoController {
     public GridPane container;
 
     public void initialize() {
-        appState.getConnectedDevice().addListener((_, _, newDevice) -> {
+        appState.getSelectedDevice().addListener((_, _, newDevice) -> {
             if (newDevice != null) {
                 appState.getSelectedPackage().addListener((_, _, newPackage) -> {
                     if (newPackage == null) {
