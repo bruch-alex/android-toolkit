@@ -4,6 +4,8 @@ import app.androidtoolkit.AppState;
 import app.androidtoolkit.model.device.AndroidDeviceRecord;
 import app.androidtoolkit.service.ADBService;
 import app.androidtoolkit.utils.ADBInstaller;
+import app.androidtoolkit.viewmodel.DeviceListCell;
+import app.androidtoolkit.viewmodel.DeviceView;
 import atlantafx.base.controls.Card;
 import javafx.concurrent.Task;
 import javafx.scene.control.*;
@@ -58,17 +60,7 @@ public class SetupScreenController {
 
     public void onAdbSucceed() {
         devicesCard.setVisible(true);
-        devicesListView.setCellFactory(_ -> new ListCell<>() {
-            @Override
-            protected void updateItem(AndroidDeviceRecord device, boolean empty) {
-                super.updateItem(device, empty);
-                if (empty || device == null) {
-                    setText(null);
-                } else {
-                    setText(device.model() + " (serial: " + device.serial() + " )");
-                }
-            }
-        });
+        devicesListView.setCellFactory(_ -> new DeviceListCell(adb::connectToDevice));
         devicesListView.setItems(state.getConnectedDevices());
     }
 

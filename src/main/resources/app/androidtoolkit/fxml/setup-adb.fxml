@@ -37,19 +37,14 @@
                         <VBox spacing="10" alignment="CENTER">
                             <RingProgressIndicator/>
 
-                            <Label text="Connect Android Device"
+                            <Label text="Connect device to your PC via USB cable"
                                    style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
 
                             <Label text="Dont see your device?"/>
 
-<!--                            <VBox spacing="6" alignment="CENTER">-->
-<!--                                <Label text="1. Enable Developer Options"/>-->
-<!--                                <Label text="2. Enable USB Debugging"/>-->
-<!--                                <Label text="3. Connect via USB cable"/>-->
-<!--                                <Label text="4. Accept RSA prompt on device"/>-->
-<!--                            </VBox>-->
-                            <ListView fx:id="devicesListView" />
-                            <Button fx:id="connectButton" text="Connect"/>
+                            <ListView fx:id="devicesListView"
+                                      prefHeight="150"/>
+                            <Button fx:id="connectButton" text="Manage"/>
                         </VBox>
                     </body>
                 </Card>

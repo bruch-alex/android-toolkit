@@ -8,11 +8,14 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.ObservableSet;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 @Getter
 @Setter
+@Slf4j
 public class AppState {
     private static final AppState INSTANCE = new AppState();
 
@@ -55,5 +58,26 @@ public class AppState {
         var pkg = selectedPackage.get();
         selectedPackage.set(null);
         selectedPackage.set(pkg);
+    }
+
+    public void addConnectedDevice(AndroidDeviceRecord device) {
+        for (var d : connectedDevices) {
+            if (d.serial().equals(device.serial())) {
+                log.debug("Device already connected: old: {}, new: {}", d, device);
+                return;
+            }
+        }
+        log.debug("Adding new device: {}", device);
+        connectedDevices.add(device);
+    }
+
+    public void updateConnectedDevice(AndroidDeviceRecord device) {
+        for (var d : connectedDevices) {
+            if (d.serial().equals(device.serial())) {
+                log.debug("Updating device: {}", device);
+                connectedDevices.set(connectedDevices.indexOf(d), device);
+                return;
+            }
+        }
     }
 }
