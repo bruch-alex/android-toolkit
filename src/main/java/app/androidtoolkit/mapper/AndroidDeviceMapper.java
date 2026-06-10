@@ -1,6 +1,6 @@
 package app.androidtoolkit.mapper;
 
-import app.androidtoolkit.model.AndroidDevice;
+import app.androidtoolkit.model.device.AndroidDevice;
 import app.androidtoolkit.viewmodel.DeviceView;
 import com.android.ddmlib.IDevice;
 

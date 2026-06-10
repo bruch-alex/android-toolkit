@@ -34,7 +34,7 @@ public class PackagePermissionsController {
 
     public void initialize() {
         setupUI();
-        appState.getConnectedDevice().addListener((_, _, newDevice) -> {
+        appState.getSelectedDevice().addListener((_, _, newDevice) -> {
             if (newDevice != null) {
                 dataLogic();
             }

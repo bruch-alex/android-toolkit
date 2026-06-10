@@ -2,9 +2,10 @@ package app.androidtoolkit.service;
 
 import app.androidtoolkit.AppState;
 import app.androidtoolkit.mapper.AndroidDeviceMapper;
-import app.androidtoolkit.model.AndroidDevice;
 import app.androidtoolkit.model.AndroidUser;
 import app.androidtoolkit.model.AppPackage;
+import app.androidtoolkit.model.device.AndroidDevice;
+import app.androidtoolkit.model.device.AndroidDeviceRecord;
 import app.androidtoolkit.utils.PackageDetailsParser;
 import com.android.ddmlib.*;
 import javafx.application.Platform;
@@ -56,9 +57,7 @@ public class ADBService {
 
             isAdbServiceRunning.set(true);
 
-            registerDeviceListeners(bridge);
-
-            refreshDevices(bridge);
+            registerDeviceListeners();
 
             registerPackageSelectionListener();
 
@@ -94,27 +93,27 @@ public class ADBService {
         return bridge;
     }
 
-    private void registerDeviceListeners(AndroidDebugBridge bridge) {
+    private void registerDeviceListeners() {
         AndroidDebugBridge.addDeviceChangeListener(
                 new AndroidDebugBridge.IDeviceChangeListener() {
                     @Override
                     public void deviceConnected(IDevice device) {
-                        log.info("Device connected: {}", device.getSerialNumber());
-                        refreshDevices(bridge);
+                        log.info("New device connected, serial: {}, model: {}", device.getSerialNumber(), device.getProperty(IDevice.PROP_DEVICE_MODEL));
+                        Platform.runLater(() -> appState.addConnectedDevice(new AndroidDeviceRecord(device.getSerialNumber(), device.getProperty(IDevice.PROP_DEVICE_MODEL))));
                     }
 
                     @Override
                     public void deviceDisconnected(IDevice device) {
-                        log.info("Device disconnected: {}", device.getSerialNumber());
+                        log.info("Device disconnected, serial: {}, model: {}", device.getSerialNumber(), device.getProperty(IDevice.PROP_DEVICE_MODEL));
                         connectedIDevice = null;
                         Platform.runLater(appState::deviceDisconnected);
-                        refreshDevices(bridge);
+                        Platform.runLater(() -> appState.getConnectedDevices().remove(new AndroidDeviceRecord(device.getSerialNumber(), device.getProperty(IDevice.PROP_DEVICE_MODEL))));
                     }
 
                     @Override
                     public void deviceChanged(IDevice device, int changeMask) {
-                        log.debug("Device changed: {} mask={}", device.getSerialNumber(), changeMask);
-                        refreshDevices(bridge);
+                        log.debug("Device changed: {} mask={}", device.getName(), changeMask);
+                        Platform.runLater(() -> appState.updateConnectedDevice(new AndroidDeviceRecord(device.getSerialNumber(), device.getProperty(IDevice.PROP_DEVICE_MODEL))));
                     }
                 }
         );
@@ -145,13 +144,12 @@ public class ADBService {
         });
     }
 
-    private void refreshDevices(AndroidDebugBridge bridge) {
+    public void connectToDevice(AndroidDeviceRecord device) {
         AndroidDevice newDevice = null;
         if (bridge != null) {
             log.debug("ADB Bridge initialized");
             for (IDevice d : bridge.getDevices()) {
-                log.debug("Checking device: {}", d);
-                if (d != null && d.isOnline()) {
+                if (d != null && d.isOnline() && d.getSerialNumber().equals(device.serial())) {
                     log.debug("Configuring new device: {}", d);
                     connectedIDevice = d;
                     newDevice = AndroidDeviceMapper.toModel(d);
@@ -168,12 +166,12 @@ public class ADBService {
         }
         var finalDevice = newDevice;
         log.debug("Configured device: {}", finalDevice);
-        Platform.runLater(() -> appState.getConnectedDevice().set(finalDevice == null ? null : AndroidDeviceMapper.toView(finalDevice)));
+        Platform.runLater(() -> appState.getSelectedDevice().set(finalDevice == null ? null : AndroidDeviceMapper.toView(finalDevice)));
     }
 
     private List<AndroidUser> getUsers(IDevice device) throws ShellCommandUnresponsiveException, AdbCommandRejectedException, IOException, TimeoutException {
         List<AndroidUser> tempUsers = new ArrayList<>();
-        Pattern pattern = Pattern.compile("\\{([^}]*)\\}");
+        Pattern pattern = Pattern.compile("\\{([^}]*)}");
         device.executeShellCommand("pm list users", new MultiLineReceiver() {
 
             @Override
@@ -203,15 +201,14 @@ public class ADBService {
             Map<String, AppPackage> scannedPackages = scanAllAppsToMap(users);
 
             Platform.runLater(() -> {
-                appState.getConnectedDevice().get().getPackages().clear();
+                appState.getSelectedDevice().get().getPackages().clear();
                 log.debug("Scanned packages: {}", scannedPackages.size());
-                appState.getConnectedDevice().get().getPackages().putAll(scannedPackages);
+                appState.getSelectedDevice().get().getPackages().putAll(scannedPackages);
             });
         });
     }
 
     private Map<String, AppPackage> scanAllAppsToMap(List<AndroidUser> users) {
-        System.out.println("Scanning all apps...");
         Map<String, AppPackage> scannedPackages = new HashMap<>();
         try {
             for (AndroidUser user : users) {
@@ -244,7 +241,7 @@ public class ADBService {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Failed to scan all apps", e);
         }
         return scannedPackages;
     }
@@ -256,7 +253,9 @@ public class ADBService {
      */
     private List<String> scanAppsForUser(IDevice device, AndroidUser user, String flag) throws ShellCommandUnresponsiveException, AdbCommandRejectedException, IOException, TimeoutException {
         final List<String> temp = new ArrayList<>();
-        device.executeShellCommand("pm list packages --user " + user.id() + " " + flag, new MultiLineReceiver() {
+        var command = "pm list packages --user " + user.id() + " " + flag;
+        log.debug("Running adb command {}", command);
+        device.executeShellCommand(command, new MultiLineReceiver() {
             @Override
             public void processNewLines(String[] lines) {
                 for (String line : lines) {
@@ -275,14 +274,15 @@ public class ADBService {
     }
 
     public void scanPackageInfoAndUpdateModel(AppPackage appPackage) throws ShellCommandUnresponsiveException, AdbCommandRejectedException, IOException, TimeoutException {
-
         final List<String> temp = new ArrayList<>();
-        connectedIDevice.executeShellCommand("dumpsys package " + appPackage.getPackageName(), new MultiLineReceiver() {
+        var command = "dumpsys package " + appPackage.getPackageName();
+        log.debug("Running adb command {}", command);
+
+        connectedIDevice.executeShellCommand(command, new MultiLineReceiver() {
             private boolean inPackageSection = false;
 
             @Override
             public void processNewLines(String[] lines) {
-
                 for (String line : lines) {
                     if (!inPackageSection && line.equals("Packages:")) {
                         inPackageSection = true;
@@ -301,21 +301,15 @@ public class ADBService {
                 return false;
             }
         });
+        log.debug("Dumpsys output: {}", temp);
 
-        System.out.println("Extracted package info size: " + temp.size());
+        log.info("Extracting package info size: {}", temp.size());
         var parsedPackage = PackageDetailsParser.getPackageDetails(temp, getUsers(connectedIDevice));
-        System.out.println("Parsed package info: " + parsedPackage);
-        if (appPackage.merge(parsedPackage)) {
-            System.out.println("Package info updated: " + appPackage);
-        } else {
-            System.out.println("Package info not updated: " + appPackage);
-        }
+        appPackage.merge(parsedPackage);
     }
 
     public void revokePermission(String packageName, String permissionFullName, String uid) throws ShellCommandUnresponsiveException, AdbCommandRejectedException, IOException, TimeoutException {
-        String command = "pm revoke " + packageName +
-                " " + permissionFullName +
-                " --user " + uid;
+        String command = "pm revoke " + packageName + " " + permissionFullName + " --user " + uid;
         log.debug("Running adb command {}", command);
         connectedIDevice.executeShellCommand(command, new MultiLineReceiver() {
             @Override
@@ -397,7 +391,7 @@ public class ADBService {
                 for (String line : lines) {
                     if (line.contains("Success")) {
                         System.out.println("App deleted: " + packageName);
-                        appState.getConnectedDevice().get().getPackages().remove(packageName);
+                        appState.getSelectedDevice().get().getPackages().remove(packageName);
                         return;
                     }
                 }

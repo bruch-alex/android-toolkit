@@ -36,7 +36,7 @@ public class App extends Application {
     }
 
     private void startMonitoring() {
-        appState.getConnectedDevice().addListener((_, _, newDevice) -> {
+        appState.getSelectedDevice().addListener((_, _, newDevice) -> {
             if (newDevice != null) {
                 Platform.runLater(() -> primaryStage.setScene(connectedDeviceStage));
             } else Platform.runLater(() -> primaryStage.setScene(setupStage));
